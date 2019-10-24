@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Test;
 
-import com.zone5ventures.common.users.User;
+import com.zone5ventures.core.users.User;
 import com.zone5ventures.http.core.api.UserAPI;
 import com.zone5ventures.http.core.responses.Z5HttpResponse;
 import com.zone5ventures.http.core.responses.Z5HttpResponseHandler;

@@ -12,7 +12,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -30,7 +29,7 @@ import com.zone5ventures.http.core.responses.Z5HttpResponseJson;
 
 public class Z5HttpClient implements Closeable {
 		
-	public static ThreadLocal<Z5HttpClient> THREADLOCAL = new ThreadLocal<>();
+	public static final ThreadLocal<Z5HttpClient> THREADLOCAL = new ThreadLocal<>();
 	
 	public static Z5HttpClient get() {
 		Z5HttpClient c = THREADLOCAL.get();
@@ -41,8 +40,6 @@ public class Z5HttpClient implements Closeable {
 		return c;
 	}
 	
-	
-
 	private String hostname = "staging.todaysplan.com.au";
 	private String protocol = "https";
 	
@@ -247,61 +244,11 @@ public class Z5HttpClient implements Closeable {
 		return invokeAsync(req, handler);
 	}
 	
-	
-	
-	
-	
-	
-	/** A application/x-www-form-urlencoded post 
-	public <T> void doPostForm(Type cls, String path, Map<String, String> form, Z5HttpResponse<T> callback) throws IOException {
-		
-		String url = getURL(path);
-		
-		HttpPost post = new HttpPost(url);
-		CloseableHttpResponse rsp = null;
-		try {
-		
-			StringBuilder result = new StringBuilder();
-		    boolean first = true;
-		    for(Entry<String, String> ent : form.entrySet()) {
-		        if (first)
-		            first = false;
-		        else
-		            result.append("&");    
-		        result.append(URLEncoder.encode(ent.getKey(), "UTF-8"));
-		        result.append("=");
-		        result.append(URLEncoder.encode(ent.getValue(), "UTF-8"));
-		    }    
-		    
-		    if (debug)
-				logger.info("POST %s %s ", url, result.toString());
-		    		    
-		    StringEntity js = new StringEntity(result.toString(), "UTF-8");
-			post.addHeader("content-type", "application/x-www-form-urlencoded");
-			post.setEntity(js);
-			
-			decorate(post);
-			
-			rsp = client.execute(post);
-			
-			doResponse(cls, rsp, callback);
-			
-		} catch (Exception e) {
-			callback.onError(e, null);
-							
-		} finally {
-			
-			if (rsp != null)
-				try { rsp.close(); } catch (IOException e) { }
-			
-			post.releaseConnection();
-		}
-			
-	} */
-	
 	@Override
 	public void close() {
-		IOUtils.closeQuietly(client);
+		if (client != null) {
+			try { client.close(); } catch (IOException e) { }
+		}
 	}
 	
 	protected String getURL(String path, Object ...args) {

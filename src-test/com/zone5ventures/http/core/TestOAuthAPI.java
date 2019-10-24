@@ -5,8 +5,8 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.zone5ventures.common.oauth.OAuthToken;
-import com.zone5ventures.common.users.User;
+import com.zone5ventures.core.oauth.OAuthToken;
+import com.zone5ventures.core.users.User;
 import com.zone5ventures.http.core.api.OAuthAPI;
 import com.zone5ventures.http.core.api.UserAPI;
 

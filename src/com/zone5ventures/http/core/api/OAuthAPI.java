@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import com.zone5ventures.common.Types;
-import com.zone5ventures.common.oauth.OAuthToken;
-import com.zone5ventures.common.users.Users;
+import com.zone5ventures.core.Types;
+import com.zone5ventures.core.oauth.OAuthToken;
+import com.zone5ventures.core.users.Users;
 import com.zone5ventures.http.core.AbstractAPI;
 import com.zone5ventures.http.core.responses.Z5HttpResponse;
 import com.zone5ventures.http.core.responses.Z5HttpResponseHandler;

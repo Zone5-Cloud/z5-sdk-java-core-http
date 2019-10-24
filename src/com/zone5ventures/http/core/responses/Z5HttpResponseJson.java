@@ -10,7 +10,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
-import com.zone5ventures.utils.GsonManager;
+import com.zone5ventures.core.utils.GsonManager;
 
 public class Z5HttpResponseJson<T> extends Z5HttpResponse<T> {
 

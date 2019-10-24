@@ -9,7 +9,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
-import com.zone5ventures.utils.GsonManager;
+import com.zone5ventures.core.utils.GsonManager;
 
 public class Z5HttpResponseFile extends Z5HttpResponse<File> {
 	
