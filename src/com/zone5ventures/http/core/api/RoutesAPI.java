@@ -136,6 +136,18 @@ public class RoutesAPI extends AbstractAPI {
 		return getClient().doDownload(path, tgt, handler);
 	}
 	
+	/** Download a Stages Dash1 SRO Route file */
+	public Future<Z5HttpResponse<File>> sro(long routeId, File tgt, Z5HttpResponseHandler<File> handler) {
+		String path = Routes.DOWNLOAD_STAGES_SRO.replace("{routeId}", String.format("%d", routeId));
+		return getClient().doDownload(path, tgt, handler);
+	}
+	
+	/** Download a Stages Dash2 Route FIT file */
+	public Future<Z5HttpResponse<File>> stagesFit(long routeId, File tgt, Z5HttpResponseHandler<File> handler) {
+		String path = Routes.DOWNLOAD_STAGES_FIT.replace("{routeId}", String.format("%d", routeId));
+		return getClient().doDownload(path, tgt, handler);
+	}
+	
 	
 	/** Download a gpx version of the route */
 	public Future<Z5HttpResponse<File>> gpx(long routeId, File tgt) {
