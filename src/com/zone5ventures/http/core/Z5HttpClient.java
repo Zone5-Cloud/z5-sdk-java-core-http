@@ -103,7 +103,7 @@ public class Z5HttpClient implements Closeable {
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 		
-		if (hostname != null && (hostname.startsWith("127.0.0.1") || hostname.contains("8080")))
+		if (hostname != null && (hostname.startsWith("127.0.0.1") || hostname.contains(":8080")))
 			this.protocol = "http";
 		else
 			this.protocol = "https";

@@ -103,19 +103,20 @@ public class TestActivitiesAPI extends BaseTest {
 	} 
 	
 	@Test
-	public void testUploadWithMetadata() throws Exception {
+	public void testUploadWith_SRAM_AXS() throws Exception {
 		// a completed ride file
-		File fit = new File("../z5-sdk-java-core/test-resources/2013-12-22-10-30-12.fit");
+		File fit = new File("../z5-sdk-java-core/test-resources/2019-10-31-030841-ELEMNT-ROAM-513E-29-0.fit");
 		assertTrue(fit.exists());
 		
-		// Set an alternate name and equipment type
-		DataFileUploadContext c = new DataFileUploadContext();
-		c.setEquipment(Equipment.gravel);
-		c.setName("Epic ride");
-
 		// Upload the file
-		DataFileUploadIndex r = api.upload(fit, c).get().getResult();
+		DataFileUploadIndex r = api.upload(fit, null).get().getResult();
 		assertNotNull(r.getId()); // file processing index id
+		
+		if (r.getState() == FileUploadState.finished || r.getState() == FileUploadState.error) {
+			assertTrue(api.delete(ActivityResultType.files, r.getResultId()).get().getResult());
+			return;
+		}
+		
 		assertTrue(r.getState() == FileUploadState.pending || r.getState() == FileUploadState.queued);
 		
 		// Wait for it to process
@@ -125,13 +126,53 @@ public class TestActivitiesAPI extends BaseTest {
 		}
 		
 		SearchInput<UserWorkoutFileSearch> search = new SearchInput<>(new UserWorkoutFileSearch());
-		search.setFields(Arrays.asList("name", "equipment"));
+		search.setFields(Arrays.asList("name", "gears.avgBattery", "gears.batteryStatus", "gears.source", "gears.name", "gears.antId"));
+				
+		search.setCriteria(new UserWorkoutFileSearch());		
+		search.getCriteria().setActivities(Arrays.asList(new VActivity(r.getResultId(), ActivityResultType.files)));		
+		MappedSearchResult<UserWorkoutResult> results = api.search(search, 0, 1).get().getResult();
+				
+		// Delete it
+		assertTrue(api.delete(ActivityResultType.files, r.getResultId()).get().getResult());
+	}
+	
+	@Test
+	public void testUploadWithMetadata() throws Exception {
+		// a completed ride file
+		File fit = new File("../z5-sdk-java-core/test-resources/2013-12-22-10-30-12.fit");
+		assertTrue(fit.exists());
+		
+		// Set an alternate name and equipment type
+		DataFileUploadContext c = new DataFileUploadContext();
+		c.setEquipment(Equipment.gravel);
+		c.setName("Epic ride");
+		c.setBikeId("d584c5cb-e81f-4fbe-bc0d-667e9bcd2c4c");
+
+		// Upload the file
+		DataFileUploadIndex r = api.upload(fit, c).get().getResult();
+		assertNotNull(r.getId()); // file processing index id
+		
+		if (r.getState() == FileUploadState.finished) {
+			assertTrue(api.delete(ActivityResultType.files, r.getResultId()).get().getResult());
+			return;
+		}
+		
+		assertTrue(r.getState() == FileUploadState.pending || r.getState() == FileUploadState.queued);
+		
+		// Wait for it to process
+		while(r.getState() != FileUploadState.finished) {
+			Thread.sleep(1000L);
+			r = api.getUploadStatus(r.getId()).get().getResult();
+		}
+		
+		SearchInput<UserWorkoutFileSearch> search = new SearchInput<>(new UserWorkoutFileSearch());
+		search.setFields(Arrays.asList("name", "equipment", "bike.avatar", "bike.serial", "bike.name", "bike.uuid"));
 		search.setCriteria(new UserWorkoutFileSearch());		
 		search.getCriteria().setActivities(Arrays.asList(new VActivity(r.getResultId(), ActivityResultType.files)));		
 		MappedSearchResult<UserWorkoutResult> results = api.search(search, 0, 1).get().getResult();
 		assertTrue(results.getResult().getResults().get(0).getName().equals("Epic ride"));
 		assertTrue(results.getResult().getResults().get(0).getEquipment().equals(Equipment.gravel));
-		
+				
 		// Delete it
 		assertTrue(api.delete(ActivityResultType.files, r.getResultId()).get().getResult());
 	}
