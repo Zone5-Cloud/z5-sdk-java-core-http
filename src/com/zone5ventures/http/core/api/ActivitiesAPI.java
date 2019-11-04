@@ -163,4 +163,16 @@ public class ActivitiesAPI extends AbstractAPI {
 		SearchInputReport input = Activities.newInstancePeaksCurve(activityType, activityId, referencePeriod);
 		return getClient().doPost(Types.MAPPED_RESULT_ACTIVITIES, Activities.PEAK_LSSKG, input, handler);
 	}
+	
+	/** Set the specialized bike (bikeId) for a completed activity - Specialized featureset only */
+	public Future<Z5HttpResponse<Boolean>> setBikeId(ActivityResultType activityType, long activityId, String bikeId, Z5HttpResponseHandler<Boolean> handler) {
+		String path = Activities.SET_BIKE.replace("{activityType}", activityType.name()).replace("{activityId}", String.format("%d", activityId)).replace("{bikeId}", bikeId);
+		return getClient().doGet(Types.BOOLEAN, path, handler);
+	}
+	
+	/** Remove the specialized bike used for a completed activity - Specialized featureset only */
+	public Future<Z5HttpResponse<Boolean>> removeBikeId(ActivityResultType activityType, long activityId, Z5HttpResponseHandler<Boolean> handler) {
+		String path = Activities.REM_BIKE.replace("{activityType}", activityType.name()).replace("{activityId}", String.format("%d", activityId));
+		return getClient().doGet(Types.BOOLEAN, path, handler);
+	}
 }
