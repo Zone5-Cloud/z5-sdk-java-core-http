@@ -3,6 +3,7 @@ package com.zone5ventures.http.core;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -219,8 +220,18 @@ public class Z5HttpClient implements Closeable {
 		return invokeAsync(req, handler);
 	}
 	
+	public <T> Future<Z5HttpResponse<T>> doPost(Type t, String path, Object entity, Map<String,Object> queryParams, Z5HttpResponseHandler<T> handler) {
+		Z5HttpPost<T> req = new Z5HttpPost<>(t, getURL(path, queryParams, new Object[0]), entity);
+		return invokeAsync(req, handler);
+	}
+	
 	public <T> Future<Z5HttpResponse<T>> doGet(Type t, String path, Z5HttpResponseHandler<T> handler) {
 		Z5HttpGet<T> req = new Z5HttpGet<>(t, getURL(path));
+		return invokeAsync(req, handler);
+	}
+	
+	public <T> Future<Z5HttpResponse<T>> doGet(Type t, String path, Map<String,Object> queryParams, Z5HttpResponseHandler<T> handler) {
+		Z5HttpGet<T> req = new Z5HttpGet<>(t, getURL(path, queryParams, new Object[0]));
 		return invokeAsync(req, handler);
 	}
 		
@@ -258,6 +269,22 @@ public class Z5HttpClient implements Closeable {
 			uri = String.format("/%s", path);
 		
 		return String.format("%s://%s%s", protocol, hostname, uri);
+	}
+	
+	protected String getURL(String path, Map<String,Object> queryParams, Object ...args) {
+		String url = getURL(path, args);
+		
+		if (queryParams != null && !queryParams.isEmpty()) {
+			StringWriter sw = new StringWriter();
+			for(String key : queryParams.keySet()) {
+				if (!sw.toString().isEmpty())
+					sw.append("&");
+				sw.append(String.format("%s=%s", key, queryParams.get(key)));
+			}
+			return String.format("%s?%s", url, sw.toString());
+		}
+		
+		return url;
 	}
 	
 	
