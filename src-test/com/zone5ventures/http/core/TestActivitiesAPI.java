@@ -65,7 +65,7 @@ public class TestActivitiesAPI extends BaseTest {
 		// Wait for it to process
 		while(r.getState() != FileUploadState.finished) {
 			Thread.sleep(1000L);
-			r = api.getUploadStatus(r.getId()).get().getResult();
+			r = api.uploadStatus(r.getId()).get().getResult();
 		}
 		
 		assertNotNull(r.getResultId());
@@ -123,7 +123,7 @@ public class TestActivitiesAPI extends BaseTest {
 		// Wait for it to process
 		while(r.getState() != FileUploadState.finished) {
 			Thread.sleep(1000L);
-			r = api.getUploadStatus(r.getId()).get().getResult();
+			r = api.uploadStatus(r.getId()).get().getResult();
 		}
 		
 		SearchInput<UserWorkoutFileSearch> search = new SearchInput<>(new UserWorkoutFileSearch());
@@ -163,7 +163,7 @@ public class TestActivitiesAPI extends BaseTest {
 		// Wait for it to process
 		while(r.getState() != FileUploadState.finished) {
 			Thread.sleep(1000L);
-			r = api.getUploadStatus(r.getId()).get().getResult();
+			r = api.uploadStatus(r.getId()).get().getResult();
 		}
 		
 		SearchInput<UserWorkoutFileSearch> search = new SearchInput<>(new UserWorkoutFileSearch());

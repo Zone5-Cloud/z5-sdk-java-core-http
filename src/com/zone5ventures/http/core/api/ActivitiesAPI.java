@@ -7,6 +7,7 @@ import com.zone5ventures.core.Types;
 import com.zone5ventures.core.activities.Activities;
 import com.zone5ventures.core.activities.DataFileUploadContext;
 import com.zone5ventures.core.activities.DataFileUploadIndex;
+import com.zone5ventures.core.activities.DataFileUploadRecent;
 import com.zone5ventures.core.activities.UserWorkoutFileSearch;
 import com.zone5ventures.core.activities.UserWorkoutResult;
 import com.zone5ventures.core.enums.ActivityResultType;
@@ -40,11 +41,22 @@ public class ActivitiesAPI extends AbstractAPI {
 		return getClient().doGet(Types.SEARCH_RESULT_ACTIVITIES, path, handler);
 	}
 	
-	/** Upload a completed activity file - ie a fit, gpx, tcx, act, srm etc */
+	/** 
+	 * <p>Upload a completed activity file for processing. ie upload a fit, gpx, srm etc file from a head-unit or watch.</p>
+	 * 
+	 * <p>See <a href="https://github.com/Zone5-Ventures/z5-sdk-java-core/wiki/Upload-completed-activity">https://github.com/Zone5-Ventures/z5-sdk-java-core/wiki/Upload-completed-activity</a></p>
+	 * 
+	 */
 	public Future<Z5HttpResponse<DataFileUploadIndex>> upload(File file, DataFileUploadContext meta) {
 		return upload(file, meta, null);
 	}
 	
+	/** 
+	 * <p>Upload a completed activity file for processing. ie upload a fit, gpx, srm etc file from a head-unit or watch.</p>
+	 * 
+	 * <p>See <a href="https://github.com/Zone5-Ventures/z5-sdk-java-core/wiki/Upload-completed-activity">https://github.com/Zone5-Ventures/z5-sdk-java-core/wiki/Upload-completed-activity</a></p>
+	 * 
+	 */
 	public Future<Z5HttpResponse<DataFileUploadIndex>> upload(File file, DataFileUploadContext meta, Z5HttpResponseHandler<DataFileUploadIndex> handler) {
 		return getClient().doUpload(Types.DATAFILE_UPLOAD_INDEX, Activities.UPLOAD, meta, file, handler);
 	}
@@ -94,14 +106,38 @@ public class ActivitiesAPI extends AbstractAPI {
 	}
 	
 	/** Use the DataFileUploadIndex.id to request the file processing status of an upload */
-	public Future<Z5HttpResponse<DataFileUploadIndex>> getUploadStatus(long indexId) {
-		return getUploadStatus(indexId, null);
+	public Future<Z5HttpResponse<DataFileUploadIndex>> uploadStatus(long indexId) {
+		return uploadStatus(indexId, null);
 	}
 	
 	/** Use the DataFileUploadIndex.id to request the file processing status of an upload */
-	public Future<Z5HttpResponse<DataFileUploadIndex>> getUploadStatus(long indexId, Z5HttpResponseHandler<DataFileUploadIndex> handler)  {
+	public Future<Z5HttpResponse<DataFileUploadIndex>> uploadStatus(long indexId, Z5HttpResponseHandler<DataFileUploadIndex> handler)  {
 		String path = Activities.FILE_INDEX_STATUS.replace("{indexId}", String.format("%d", indexId));
 		return getClient().doGet(Types.DATAFILE_UPLOAD_INDEX, path, handler);
+	}
+	
+	/** Use the DataFileUploadIndex.id to download the original uploaded file - this can be used even if the file could not be processed  */
+	public Future<Z5HttpResponse<File>> downloadUpload(long indexId, File tgt, Z5HttpResponseHandler<File> handler) {
+		String path = Activities.FILE_INDEX_DOWNLOAD.replace("{indexId}", String.format("%d", indexId));
+		return getClient().doDownload(path, tgt, handler);
+	}
+	
+	/** Use the DataFileUploadIndex.id to cancel a file upload / delete file which has failed to process */
+	public Future<Z5HttpResponse<Boolean>> cancelUpload(long indexId, Z5HttpResponseHandler<Boolean> handler)  {
+		String path = Activities.FILE_INDEX_CANCEL.replace("{indexId}", String.format("%d", indexId));
+		return getClient().doGet(Types.BOOLEAN, path, handler);
+	}
+	
+	/** Use the DataFileUploadIndex.id to request that a failed file be re-processed / re-attempted. If the file has been successfully processed before, this endpoint will re-queue the file for re-processing. */
+	public Future<Z5HttpResponse<DataFileUploadIndex>> retryUpload(long indexId, Z5HttpResponseHandler<DataFileUploadIndex> handler)  {
+		String path = Activities.FILE_INDEX_RETRY.replace("{indexId}", String.format("%d", indexId));
+		return getClient().doGet(Types.DATAFILE_UPLOAD_INDEX, path, handler);
+	}
+	
+	/** Query for currently processing files, and files which have been uploaded or reprocessed within the last X seconds */
+	public Future<Z5HttpResponse<DataFileUploadRecent>> uploadStatus(long userId, int secs, Z5HttpResponseHandler<DataFileUploadRecent> handler)  {
+		String path = Activities.FILE_INDEX_STATUS_RECENT.replace("{userId}", String.format("%d", userId).replace("{secs}", String.format("%d", secs)));
+		return getClient().doGet(Types.DATAFILE_STATUS_INDEX, path, handler);
 	}
 
 	/** Delete a file, workout, event by id */
