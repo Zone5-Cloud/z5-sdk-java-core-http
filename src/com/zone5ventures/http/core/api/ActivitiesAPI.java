@@ -10,6 +10,7 @@ import com.zone5ventures.core.activities.DataFileUploadIndex;
 import com.zone5ventures.core.activities.DataFileUploadRecent;
 import com.zone5ventures.core.activities.UserWorkoutFileSearch;
 import com.zone5ventures.core.activities.UserWorkoutResult;
+import com.zone5ventures.core.activities.VActivity;
 import com.zone5ventures.core.enums.ActivityResultType;
 import com.zone5ventures.core.enums.IntensityZoneType;
 import com.zone5ventures.core.enums.RelativePeriod;
@@ -151,6 +152,18 @@ public class ActivitiesAPI extends AbstractAPI {
 		return getClient().doGet(Types.BOOLEAN, path, handler);
 	}
 	
+	/** Manually update an activity - ie change a name, or override completed metrics */
+	public Future<Z5HttpResponse<VActivity>> update(ActivityResultType activityType, long activityId, UserWorkoutResult input) {
+		input.setActivity(activityType);
+		input.setActivityId(activityId);
+		return getClient().doGet(Types.ACTIVITY, Activities.UPDATE, null);
+	}
+	
+	/** Manually update an activity - ie change a name, or override completed metrics */
+	public Future<Z5HttpResponse<VActivity>> update(ActivityResultType activityType, long activityId, UserWorkoutResult input, Z5HttpResponseHandler<VActivity> handler) {
+		return getClient().doGet(Types.ACTIVITY, Activities.UPDATE, handler);
+	}
+		
 	public Future<Z5HttpResponse<MappedResult<UserWorkoutResult>>> timeInZones(ActivityResultType activityType, long activityId, IntensityZoneType zoneType) {
 		return timeInZones(activityType, activityId, zoneType, null);
 	}

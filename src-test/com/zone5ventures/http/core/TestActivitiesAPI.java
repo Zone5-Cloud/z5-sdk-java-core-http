@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -40,12 +39,6 @@ import com.zone5ventures.http.core.api.ActivitiesAPI;
 public class TestActivitiesAPI extends BaseTest {
 
 	ActivitiesAPI api = new ActivitiesAPI();
-	
-	private File createTempFile(String extn) throws IOException {
-		File tmp = File.createTempFile(getClass().getSimpleName(), extn);
-		tmp.deleteOnExit();
-		return tmp;
-	}
 	
 	@Test
 	public void testUploadWithNoMetadata() throws Exception {

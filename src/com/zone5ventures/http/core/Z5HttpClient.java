@@ -18,11 +18,13 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import com.zone5ventures.http.core.requests.Z5HttpDelete;
 import com.zone5ventures.http.core.requests.Z5HttpGet;
 import com.zone5ventures.http.core.requests.Z5HttpGetDownload;
 import com.zone5ventures.http.core.requests.Z5HttpPost;
 import com.zone5ventures.http.core.requests.Z5HttpPostFileUpload;
 import com.zone5ventures.http.core.requests.Z5HttpPostForm;
+import com.zone5ventures.http.core.requests.Z5HttpPut;
 import com.zone5ventures.http.core.requests.Z5HttpRequest;
 import com.zone5ventures.http.core.responses.Z5HttpResponse;
 import com.zone5ventures.http.core.responses.Z5HttpResponseHandler;
@@ -181,6 +183,7 @@ public class Z5HttpClient implements Closeable {
 						result.parse();
 					
 					} catch (Exception e) {
+						e.printStackTrace();
 						result = req.newInstance(e);
 						
 					} finally {
@@ -220,6 +223,11 @@ public class Z5HttpClient implements Closeable {
 		return invokeAsync(req, handler);
 	}
 	
+	public <T> Future<Z5HttpResponse<T>> doPut(Type t, String path, Object entity, Z5HttpResponseHandler<T> handler) {
+		Z5HttpPut<T> req = new Z5HttpPut<>(t, getURL(path), entity);
+		return invokeAsync(req, handler);
+	}
+	
 	public <T> Future<Z5HttpResponse<T>> doPost(Type t, String path, Object entity, Map<String,Object> queryParams, Z5HttpResponseHandler<T> handler) {
 		Z5HttpPost<T> req = new Z5HttpPost<>(t, getURL(path, queryParams, new Object[0]), entity);
 		return invokeAsync(req, handler);
@@ -227,6 +235,11 @@ public class Z5HttpClient implements Closeable {
 	
 	public <T> Future<Z5HttpResponse<T>> doGet(Type t, String path, Z5HttpResponseHandler<T> handler) {
 		Z5HttpGet<T> req = new Z5HttpGet<>(t, getURL(path));
+		return invokeAsync(req, handler);
+	}
+	
+	public <T> Future<Z5HttpResponse<T>> doDelete(Type t, String path, Z5HttpResponseHandler<T> handler) {
+		Z5HttpDelete<T> req = new Z5HttpDelete<>(t, getURL(path));
 		return invokeAsync(req, handler);
 	}
 	

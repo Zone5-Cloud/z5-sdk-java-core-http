@@ -1,9 +1,15 @@
 package com.zone5ventures.http.core;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+
+import com.zone5ventures.core.users.User;
+import com.zone5ventures.core.utils.GsonManager;
+import com.zone5ventures.http.core.api.UserAPI;
 
 public abstract class BaseTest {
 	
@@ -51,5 +57,21 @@ public abstract class BaseTest {
 		Z5HttpClient.get().setToken(token);
 		Z5HttpClient.get().setDebug(true);
 	}
+	
+	protected File createTempFile(String extn) throws IOException {
+		File tmp = File.createTempFile(getClass().getSimpleName(), extn);
+		tmp.deleteOnExit();
+		return tmp;
+	}
+	
+	public User me() throws ExecutionException, InterruptedException {
+		return new UserAPI().me().get().getResult();
+	}
 
+	protected String toJson(Object o) {
+		if  (o != null) {
+			return GsonManager.getInstance(true).toJson(o);
+		}
+		return "null";
+	}
 }
