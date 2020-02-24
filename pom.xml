@@ -7,7 +7,7 @@
     <repository>
       <id>github</id>
       <name>GitHub Zone5Cloud Apache Maven Packages</name>
-      <url>https://maven.pkg.github.com/Zone5-Ventures/z5-sdk-java-core-http</url>
+      <url>https://maven.pkg.github.com/Zone5-Cloud/z5-sdk-java-core-http</url>
     </repository>
   </distributionManagement>
 
@@ -32,11 +32,6 @@
 			<version>4.5.3</version>
 		</dependency>
 		
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpmime</artifactId>
-			<version>4.5.3</version>
-		</dependency>
 		
 		<dependency>
 			<groupId>com.zone5cloud</groupId>
@@ -59,3 +54,4 @@
 		</dependency>
   </dependencies>
 </project>
+
