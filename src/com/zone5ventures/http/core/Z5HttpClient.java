@@ -193,8 +193,6 @@ public class Z5HttpClient implements Closeable {
 					} finally {
 						if (rsp != null)
 							try { rsp.close(); } catch (IOException e) { }
-									
-						req.releaseConnection();
 					}
 					
 					if (debug)

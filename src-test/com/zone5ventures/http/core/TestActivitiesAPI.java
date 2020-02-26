@@ -48,11 +48,11 @@ public class TestActivitiesAPI extends BaseTest {
 		
 		// Upload the file
 		DataFileUploadIndex r = api.upload(fit, null).get().getResult();
-		assertNotNull(r.getId()); // file processing index id
-		if (r.getState() == FileUploadState.finished) {
+		if (r.getState() == FileUploadState.finished || (r.getState() == FileUploadState.error && r.getResultId() != null)) {
 			assertTrue(api.delete(ActivityResultType.files, r.getResultId()).get().getResult());
 			return;
 		}
+		assertNotNull(r.getId()); // file processing index id
 		assertTrue(r.getState() == FileUploadState.pending || r.getState() == FileUploadState.queued);
 		
 		// Wait for it to process
