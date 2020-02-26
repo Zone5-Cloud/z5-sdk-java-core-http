@@ -21,7 +21,7 @@ public class Z5HttpPost<T> extends HttpPost implements Z5HttpRequest<T> {
 		this.t = t;
 		
 		if (entity != null) {
-			StringEntity js = new StringEntity(GsonManager.getInstance().toJson(entity), "UTF-8");
+			StringEntity js = new StringEntity(entity instanceof String ? (String)entity : GsonManager.getInstance().toJson(entity), "UTF-8");
 			addHeader("content-type", "application/json");
 			setEntity(js);
 		}
@@ -29,7 +29,7 @@ public class Z5HttpPost<T> extends HttpPost implements Z5HttpRequest<T> {
 	
 	@Override
 	public String toString() {
-		return String.format("POST %s %s", getURI().getPath(), entity == null ? "" : GsonManager.getInstance(true).toJson(entity));
+		return String.format("POST %s %s", getURI().getPath(), entity == null ? "" : entity instanceof String ? (String)entity : GsonManager.getInstance(true).toJson(entity));
 	}
 	
 	@Override

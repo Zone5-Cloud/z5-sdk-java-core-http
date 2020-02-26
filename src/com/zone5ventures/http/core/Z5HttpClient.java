@@ -82,6 +82,10 @@ public class Z5HttpClient implements Closeable {
 		this.logger = logger;
 	}
 	
+	public boolean isSpecialized() {
+		return this.hostname != null && (this.hostname.equals("api-sp.todaysplan.com.au") || this.hostname.equals("api-sp-staging.todaysplan.com.au"));
+	}
+	
 	/** Enable verbose debug logging */
 	public void setDebug(boolean on) {
 		debug = on;
