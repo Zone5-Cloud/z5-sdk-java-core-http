@@ -14,7 +14,6 @@
   </distributionManagement>
   <profiles>
             <profile>
-              
               <id>cicd</id>
               <properties>
                 <sonar.projectKey>z5-sdk-java-core-http</sonar.projectKey>
