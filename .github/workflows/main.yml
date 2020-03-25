@@ -25,5 +25,5 @@ jobs:
       env:
         CICD_PAT: ${{ secrets.CICD_PAT }}
       run: |
-        echo "<settings><servers><server><id>github</id><username>aivakov</username><password>${CICD_PAT}</password></server></servers></settings>" > ~/.m2/settings.xml
+        echo "<settings><servers><server><id>core</id><username>aivakov</username><password>${CICD_PAT}</password></server></servers></settings>" > ~/.m2/settings.xml
         mvn deploy -Drevision=${GITHUB_REF##*/}
