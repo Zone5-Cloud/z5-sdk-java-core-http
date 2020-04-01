@@ -42,5 +42,29 @@ public class MetricsAPI extends AbstractAPI {
 		return getClient().doPost(Types.MAPPED_RESULT_AGGREGATES, Activities.METRICS, input, handler);
 	}
 	
+	/**
+	 * Get aggregate metrics by bike.<br>
+	 * Supported aggregates include;
+	 * <ol>
+	 * <li>avg - simple average
+	 * <li>min - minimum value
+	 * <li>max - maximim value
+	 * <li>wavg - weighted average (weighted by time)
+	 * <li>sum - sum of values
+	 * </ol>
+	 * @param ranges - may be null or empty, and will then default to all time
+	 * @param fields - the aggregate fields being requested - this should not be null or empty
+	 * @param bikeUids - the UserBike.uuid entries which we will limit the search to and group by
+	 * 
+	 */
+	public Future<Z5HttpResponse<MappedResult<UserWorkoutResultAggregates>>> getBikeMetrics(List<DateRange> ranges, List<String> fields, List<String> bikeUids) {
+		return getBikeMetrics(ranges, fields, bikeUids, null);
+	}
+	
+	public Future<Z5HttpResponse<MappedResult<UserWorkoutResultAggregates>>> getBikeMetrics(List<DateRange> ranges, List<String> fields, List<String> bikeUids, Z5HttpResponseHandler<MappedResult<UserWorkoutResultAggregates>> handler) {
+		SearchInput<SearchInputReport> input = Activities.newInstanceMetricsBikes(ranges, fields, bikeUids);
+		return getClient().doPost(Types.MAPPED_RESULT_AGGREGATES, Activities.METRICS, input, handler);
+	}
+	
 	
 }
