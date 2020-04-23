@@ -4,7 +4,9 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -294,7 +296,11 @@ public class Z5HttpClient implements Closeable {
 			for(String key : queryParams.keySet()) {
 				if (!sw.toString().isEmpty())
 					sw.append("&");
-				sw.append(String.format("%s=%s", key, queryParams.get(key)));
+				try {
+					sw.append(String.format("%s=%s", key, URLEncoder.encode(queryParams.get(key).toString(), "UTF-8")));
+				} catch (UnsupportedEncodingException e) {
+					// ignore
+				}
 			}
 			return String.format("%s?%s", url, sw.toString());
 		}

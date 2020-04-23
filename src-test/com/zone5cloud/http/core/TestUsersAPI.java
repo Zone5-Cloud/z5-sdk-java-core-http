@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 
@@ -27,6 +28,18 @@ public class TestUsersAPI extends BaseTest {
 	// This is your allocated clientId and secret - these can be set to null for S-Digital environments
 	String clientId = null; 	// "<your OAuth clientId issued by Zone5>";
 	String clientSecret = null; // "<your OAuth secret issued by Zone5>";
+	
+	@Test
+	public void getEmailStatus() throws Exception {
+		Map<String,Boolean> m = api.getEmailValidationStatus("andrew@todaysplan.com.au").get().getResult();
+		
+		assertTrue(m.get("isVerified"));
+		assertTrue(m.get("Specialized_Terms"));
+		assertTrue(m.get("Specialized_Terms_Apps"));
+		
+		m = api.getEmailValidationStatus("andrew+blah@todaysplan.com.au").get().getResult();
+		assertTrue(m.isEmpty());
+	}
 	
 	/** To run this test you need a valid clientId & secret */
 	@Test

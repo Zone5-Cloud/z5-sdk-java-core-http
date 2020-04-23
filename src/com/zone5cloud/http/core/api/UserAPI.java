@@ -1,19 +1,21 @@
 package com.zone5cloud.http.core.api;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import com.zone5cloud.http.core.AbstractAPI;
-import com.zone5cloud.http.core.responses.Z5HttpResponse;
-import com.zone5cloud.http.core.responses.Z5HttpResponseHandler;
 import com.zone5cloud.core.Types;
 import com.zone5cloud.core.oauth.OAuthTokenAlt;
 import com.zone5cloud.core.users.LoginResponse;
 import com.zone5cloud.core.users.RegisterUser;
 import com.zone5cloud.core.users.User;
-import com.zone5cloud.core.users.Users;
 import com.zone5cloud.core.users.UserPreferences;
+import com.zone5cloud.core.users.Users;
+import com.zone5cloud.http.core.AbstractAPI;
+import com.zone5cloud.http.core.responses.Z5HttpResponse;
+import com.zone5cloud.http.core.responses.Z5HttpResponseHandler;
 
 public class UserAPI extends AbstractAPI {
 		
@@ -99,6 +101,18 @@ public class UserAPI extends AbstractAPI {
 	/** Test if an email address is already registered in the system - true if the email already exists in the system */
 	public Future<Z5HttpResponse<Boolean>> isEmailRegistered(String email, Z5HttpResponseHandler<Boolean> handler) {
 		return getClient().doPost(Types.BOOLEAN, Users.EMAIL_EXISTS, email, handler);
+	}
+	
+	/** Get email validation status - S-Digital only */
+	public Future<Z5HttpResponse<Map<String,Boolean>>> getEmailValidationStatus(String email) {
+		return getEmailValidationStatus(email, null);
+	}
+	
+	/** Get email validation status - S-Digital only - returns a map with keys of isVerified, Specialized_Terms and Specialized_Terms_Apps - ie is the user verified and have they accepted these terms & conditions */
+	public Future<Z5HttpResponse<Map<String,Boolean>>> getEmailValidationStatus(String email, Z5HttpResponseHandler<Map<String,Boolean>> handler) {
+		Map<String, Object> queryParams = new HashMap<>(1);
+		queryParams.put("email", email);
+		return getClient().doGet(Types.MAP_BOOLEAN, Users.EMAIL_STATUS, queryParams, handler);
 	}
 	
 	/** Request a password reset email - ie get a magic link to reset a user's password */
