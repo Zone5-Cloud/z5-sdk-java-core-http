@@ -74,12 +74,13 @@ public class UserAPI extends AbstractAPI {
 		m.put("username", email);
 		m.put("password", password);
 		m.put("token", Boolean.TRUE.toString());
-		if (clientId != null && clientSecret != null) {
+		if (clientId != null)
 			m.put("clientId", clientId);
+		
+		if (clientSecret != null)
 			m.put("clientSecret", clientSecret);
-		} else if (!getClient().isSpecialized()) {
-			throw new IllegalArgumentException("clientId and clientSecret are required");
-		}
+		
+		
 		return getClient().doPost(Types.LOGIN_RESPONSE, Users.LOGIN, m, handler);		
 	}
 	
