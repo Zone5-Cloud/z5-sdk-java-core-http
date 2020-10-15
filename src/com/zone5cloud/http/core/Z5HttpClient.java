@@ -293,11 +293,11 @@ public class Z5HttpClient implements Closeable {
 		
 		if (queryParams != null && !queryParams.isEmpty()) {
 			StringWriter sw = new StringWriter();
-			for(String key : queryParams.keySet()) {
+			for(Map.Entry<String, Object> entry : queryParams.entrySet()) {
 				if (!sw.toString().isEmpty())
 					sw.append("&");
 				try {
-					sw.append(String.format("%s=%s", key, URLEncoder.encode(queryParams.get(key).toString(), "UTF-8")));
+					sw.append(String.format("%s=%s", entry.getKey(), URLEncoder.encode(entry.getValue().toString(), "UTF-8")));
 				} catch (UnsupportedEncodingException e) {
 					// ignore
 				}
