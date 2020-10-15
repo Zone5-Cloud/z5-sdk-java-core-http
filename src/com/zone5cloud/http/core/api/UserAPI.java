@@ -1,7 +1,5 @@
 package com.zone5cloud.http.core.api;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
