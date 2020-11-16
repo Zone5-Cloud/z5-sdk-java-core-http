@@ -93,14 +93,14 @@ public class ThirdPartyConnectionsAPI extends AbstractAPI {
 	}
 	
 	/**
-	 * Query whether an upgrade is available for the current user agent (client app).
+	 * Query whether the current version of the user agent (client app) has been deprecated and requires an upgrade.
 	 */
 	public Future<Z5HttpResponse<UpgradeAvailableResponse>> getDeprecated() {
 		return getDeprecated(null);
 	}
 	
 	/**
-	 * Query whether an upgrade is available for the current user agent (client app).
+	 * Query whether the current version of the user agent (client app) has been deprecated and requires an upgrade.
 	 * @param handler: callback on asynchronous completion
 	 */
 	public Future<Z5HttpResponse<UpgradeAvailableResponse>> getDeprecated(Z5HttpResponseHandler<UpgradeAvailableResponse> handler) {

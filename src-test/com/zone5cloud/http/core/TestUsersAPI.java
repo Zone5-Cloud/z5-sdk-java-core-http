@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -71,6 +72,7 @@ public class TestUsersAPI extends BaseTest {
 		User user = api.register(register).get().getResult();
 		assertNotNull(user.getId()); // our unique userId
 		assertEquals(email, user.getEmail());
+		assertEquals(Locale.getDefault().toString(), user.getLocale());
 		
 		// Note - in S-Digital, the user will need to validate their email before they can login...
 		if (api.getClient().isSpecialized()) {
@@ -116,9 +118,11 @@ public class TestUsersAPI extends BaseTest {
 		api.getClient().setToken(r.getToken());
 		
 		// Exercise the refresh access token
-		OAuthTokenAlt alt = api.refreshToken().get().getResult();
-		assertNotNull(alt.getToken());
-		assertNotNull(alt.getTokenExp());
+		if (api.getClient().isSpecialized()) {
+			OAuthTokenAlt alt = api.refreshToken().get().getResult();
+			assertNotNull(alt.getToken());
+			assertNotNull(alt.getTokenExp());
+		}
 		
 		// S-Digital Needs to be deleted via GIGYA
 		if (!api.getClient().isSpecialized()) {

@@ -83,6 +83,16 @@ public class TestThirdPartyConnections extends BaseTest {
 		
 		assertFalse(response.getResult().getIsUpgradeAvailable());
 		
+		// Now do it again but set the client agent such that getDeprecated will return true
+		Z5HttpClient.get().setUserAgent("ride-iOS/1.2.3 (10)");
+		
+		response = api.getDeprecated().get();
+		assertTrue(response.getStatusCode() >= 200 && response.getStatusCode() < 300);
+		assertNull(response.getError());
+		assertNotNull(response.getResult());
+		
+		assertTrue(response.getResult().getIsUpgradeAvailable());
+		
 	}
 	
 
