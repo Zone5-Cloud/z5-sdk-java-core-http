@@ -49,6 +49,7 @@ public class Z5HttpClient implements Closeable {
 	private String protocol = "https";
 	
 	private String bearer = null;
+	private String userAgent = null;
 	private ILogger logger = null;
 	
 	// this is a threadsafe client
@@ -103,6 +104,16 @@ public class Z5HttpClient implements Closeable {
 		return this.bearer;
 	}
 	
+	/** Set a user-agent string */
+	public void setUserAgent(String agent) {
+		this.userAgent = agent;
+	}
+	
+	/** Get the user's OAuth bearer token - note that this will include the Bearer prefix */
+	public String getUserAgent() {
+		return this.userAgent;
+	}
+	
 	/** Set an alternate logger */
 	public void setLogger(ILogger logger) {
 		this.logger = logger;
@@ -118,12 +129,22 @@ public class Z5HttpClient implements Closeable {
 			this.protocol = "https";
 	}
 	
-	/** Add authorization header, and also set the legacy tp-nodecorate header */
+	/**
+	 * Add headers: 
+	 * * add authorization header
+	 * * add the legacy tp-nodecorate header 
+	 * * add the customisable User-Agent header if set
+	 **/
 	protected void decorate(Z5HttpRequest<?> req) {
-		if (bearer != null)
-			req.addHeader("Authorization", bearer);
+		String token = this.bearer;
+		if (token != null)
+			req.addHeader("Authorization", token);
 		
 		req.addHeader("tp-nodecorate", "true");
+		
+		String agent = this.userAgent;
+		if (agent != null && !agent.isEmpty())
+			req.addHeader("User-Agent", agent);
 	}
 	
 	/** 
