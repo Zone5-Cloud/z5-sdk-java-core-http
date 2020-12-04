@@ -41,9 +41,9 @@ public class TestThirdPartyConnections extends BaseTest {
 		rsp = api.hasThirdPartyToken(UserConnectionsType.strava).get().getResult();
 		assertTrue(rsp.getAvailable());
 		assertEquals("abc123", rsp.getToken().getToken());
-		assertEquals("refreshme", rsp.getToken().getRefresh_token());
+		assertEquals("refreshme", rsp.getToken().getRefreshToken());
 		assertEquals("notmuch", rsp.getToken().getScope());
-		assertNotNull(rsp.getToken().getExpires_in());
+		assertNotNull(rsp.getToken().getExpiresIn());
 		
 		rsp = api.removeThirdPartyToken(UserConnectionsType.strava).get().getResult();
 		assertTrue(rsp.getSuccess());
