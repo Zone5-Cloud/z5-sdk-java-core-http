@@ -9,9 +9,9 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 
+import com.zone5cloud.core.utils.GsonManager;
 import com.zone5cloud.http.core.responses.Z5HttpResponse;
 import com.zone5cloud.http.core.responses.Z5HttpResponseJson;
-import com.zone5cloud.core.utils.GsonManager;
 
 public class Z5HttpPostFileUpload<T> extends HttpPost implements Z5HttpRequest<T> {
 	

@@ -35,14 +35,18 @@ public class Z5HttpResponseFile extends Z5HttpResponse<File> {
 	
 	@Override
 	public String toString() {
-		if (file != null)
+		if (file != null) {
 			return file.getAbsolutePath() + " (" + file.length()+")";
-		else if (error != null && error.startsWith("{"))
-			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(error, Map.class));
-		else if (error != null && error.startsWith("["))
-			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(error, ArrayList.class));
-		else if (error != null)
-			return error;
+		} else if (error != null) {
+			return GsonManager.getInstance(true).toJson(error);
+		} else if (rawError != null && rawError.startsWith("{")) {
+			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(rawError, Map.class));
+		} else if (rawError != null && rawError.startsWith("[")) {
+			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(rawError, ArrayList.class));
+		} else if (rawError != null) {
+			return rawError;
+		}
+		
 		return "";
 	}
 }

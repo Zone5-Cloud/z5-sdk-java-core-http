@@ -3,54 +3,49 @@ package com.zone5cloud.http.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import com.zone5cloud.http.core.api.UserAPI;
-import com.zone5cloud.http.core.responses.Z5HttpResponse;
-import com.zone5cloud.http.core.responses.Z5HttpResponseHandler;
+import com.zone5cloud.core.Z5Error;
 import com.zone5cloud.core.enums.UnitMeasurement;
-import com.zone5cloud.core.oauth.OAuthTokenAlt;
+import com.zone5cloud.core.oauth.OAuthToken;
 import com.zone5cloud.core.users.LoginResponse;
 import com.zone5cloud.core.users.RegisterUser;
 import com.zone5cloud.core.users.User;
 import com.zone5cloud.core.users.UserPreferences;
+import com.zone5cloud.http.core.api.UserAPI;
+import com.zone5cloud.http.core.responses.Z5HttpResponse;
+import com.zone5cloud.http.core.responses.Z5HttpResponseHandler;
 
 public class TestUsersAPI extends BaseTest {
 
 	UserAPI api = new UserAPI();
 	
 	// This is your allocated clientId and secret - these can be set to null for S-Digital environments
-	String clientId = null; 	// "<your OAuth clientId issued by Zone5>";
-	String clientSecret = null; // "<your OAuth secret issued by Zone5>";
+	String clientId = "1er3227s1mia3pkqrngntl4sv6"; 	// "<your OAuth clientId issued by Zone5>";
+	String clientSecret = "19re5046mf15n5m38klrmnr9sjtcia4sdv4hpn0ivoshm1tu72cp"; // "<your OAuth secret issued by Zone5>";
 	
-	@Test
-	public void getEmailStatus() throws Exception {
-		Map<String,Boolean> m = api.getEmailValidationStatus("andrew@todaysplan.com.au").get().getResult();
-		
-		assertTrue(m.get("isVerified"));
-		assertTrue(m.get("Specialized_Terms"));
-		assertTrue(m.get("Specialized_Terms_Apps"));
-		
-		m = api.getEmailValidationStatus("andrew+blah@todaysplan.com.au").get().getResult();
-		assertTrue(m.isEmpty());
+	@Before
+	public void setup() throws InterruptedException, ExecutionException {
+		login();
 	}
 	
 	/** To run this test you need a valid clientId & secret */
 	@Test
 	public void testRegistrationLoginDelete() throws Exception {
-		
-		// You should set this to an email you control ...
-		String email = String.format("andrew+%d@todaysplan.com.au", System.currentTimeMillis());
+		String[] parts = TEST_EMAIL.split("@");
+		String email = String.format("%s+%d@%s", parts[0], System.currentTimeMillis(), parts[1]);
 		String password = "superS3cretStu55";
-		String firstname = "Andrew";
-		String lastname = "Hall";
+		String firstname = "Test";
+		String lastname = "User";
 		
 		RegisterUser register = new RegisterUser();
 		register.setEmail(email);
@@ -75,7 +70,7 @@ public class TestUsersAPI extends BaseTest {
 		assertEquals(Locale.getDefault().toString(), user.getLocale());
 		
 		// Note - in S-Digital, the user will need to validate their email before they can login...
-		if (api.getClient().isSpecialized()) {
+		if (api.getClient().isSpecialized() && clientId != SBC_NO_VERIFICATION_GIGYA) {
 			System.out.println("Waiting for confirmation that you have verified your email address ... press Enter when done");
 			System.in.read();
 		}
@@ -84,7 +79,6 @@ public class TestUsersAPI extends BaseTest {
 		Future<Z5HttpResponse<LoginResponse>> f = api.login(email, password, clientId, clientSecret);
 		LoginResponse r = f.get().getResult();
 		assertNotNull(r.getToken());
-		api.getClient().setToken(r.getToken());
 		
 		// Try it out!
 		User me = api.me().get().getResult();
@@ -93,7 +87,8 @@ public class TestUsersAPI extends BaseTest {
 		// check that this user is now considered registered
 		assertTrue(api.isEmailRegistered(email).get().getResult());
 		assertTrue(api.logout().get().getResult());
-		api.getClient().setToken(null);
+		assertNull(Z5HttpClient.get().getToken());
+		
 		assertTrue(api.isEmailRegistered(email).get().getResult());
 		
 		// Oops I forgot my password - send me an email with a magic link
@@ -104,7 +99,6 @@ public class TestUsersAPI extends BaseTest {
 		r = f.get().getResult();
 		assertNotNull(r.getToken());
 	
-		api.getClient().setToken(r.getToken());
 		me = api.me().get().getResult();
 		assertEquals(me.getId(), user.getId());
 		
@@ -115,14 +109,16 @@ public class TestUsersAPI extends BaseTest {
 		f = api.login(email, "myNewPassword123!!", clientId, clientSecret);
 		r = f.get().getResult();
 		assertNotNull(r.getToken());
-		api.getClient().setToken(r.getToken());
 		
 		// Exercise the refresh access token
-		if (api.getClient().isSpecialized()) {
-			OAuthTokenAlt alt = api.refreshToken().get().getResult();
+		if (api.getClient().isSpecialized() && api.getClient().getToken().getRefreshToken() == null) {
+			OAuthToken alt = api.refreshToken().get().getResult();
 			assertNotNull(alt.getToken());
 			assertNotNull(alt.getTokenExp());
+			me = api.me().get().getResult();
+			assertEquals(me.getId(), user.getId());
 		}
+
 		
 		// S-Digital Needs to be deleted via GIGYA
 		if (!api.getClient().isSpecialized()) {
@@ -131,7 +127,6 @@ public class TestUsersAPI extends BaseTest {
 			
 			// We are no longer valid!
 			assertEquals(401, api.me().get().getStatusCode());
-			api.getClient().setToken(null);
 			
 			assertEquals(401, api.login(email, password, clientId, clientSecret).get().getStatusCode());
 		}
@@ -185,14 +180,14 @@ public class TestUsersAPI extends BaseTest {
 			}
 			
 			@Override
-			public void onError(Throwable t, String error) {
+			public void onError(Throwable t, Z5Error error) {
 				l.countDown();
 				assertTrue(false);
 				
 			}
 			
 			@Override
-			public void onError(int code, String error) {
+			public void onError(int code, Z5Error error) {
 				l.countDown();	
 				assertTrue(false);
 			}

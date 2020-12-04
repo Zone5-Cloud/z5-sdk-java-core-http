@@ -5,13 +5,17 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import com.zone5cloud.core.Types;
-import com.zone5cloud.core.oauth.OAuthTokenAlt;
+import com.zone5cloud.core.Z5Error;
+import com.zone5cloud.core.oauth.OAuthToken;
+import com.zone5cloud.core.users.LoginRequest;
 import com.zone5cloud.core.users.LoginResponse;
+import com.zone5cloud.core.users.NewPassword;
 import com.zone5cloud.core.users.RegisterUser;
 import com.zone5cloud.core.users.User;
 import com.zone5cloud.core.users.UserPreferences;
 import com.zone5cloud.core.users.Users;
 import com.zone5cloud.http.core.AbstractAPI;
+import com.zone5cloud.http.core.Z5HttpClient;
 import com.zone5cloud.http.core.responses.Z5HttpResponse;
 import com.zone5cloud.http.core.responses.Z5HttpResponseHandler;
 
@@ -43,7 +47,7 @@ public class UserAPI extends AbstractAPI {
 	
 	/** Register a new user account */
 	public Future<Z5HttpResponse<User>> register(RegisterUser user) {
-		return getClient().doPost(Types.USER, Users.REGISTER_USER, user, null);
+		return register(user, null);
 	}
 	
 	/** Register a new user account */
@@ -53,12 +57,12 @@ public class UserAPI extends AbstractAPI {
 	
 	/** Delete a user account */
 	public Future<Z5HttpResponse<Void>> deleteAccount(long userId) {
-		return getClient().doGet(Types.VOID, Users.DELETE_USER.replace("{userId}", ""+userId), null);
+		return deleteAccount(userId, null);
 	}
 	
 	/** Delete a user account */
 	public Future<Z5HttpResponse<Void>> deleteAccount(long userId, Z5HttpResponseHandler<Void> handler) {
-		return getClient().doGet(Types.VOID, Users.DELETE_USER.replace("{userId}", ""+userId), handler);
+		return getClient().doGet(Types.VOID, Users.DELETE_USER.replace("{userId}", ""+userId), handler);		
 	}
 
 	/** Login as a user and obtain a bearer token - clientId and clientSecret are not required in Specialized featureset */
@@ -68,18 +72,40 @@ public class UserAPI extends AbstractAPI {
 	
 	/** Login as a user and obtain a bearer token - clientId and clientSecret are not required in Specialized featureset */
 	public Future<Z5HttpResponse<LoginResponse>> login(String email, String password, String clientId, String clientSecret, Z5HttpResponseHandler<LoginResponse> handler) {
-		Map<String, String> m = new HashMap<>(5);
-		m.put("username", email);
-		m.put("password", password);
-		m.put("token", Boolean.TRUE.toString());
-		if (clientId != null)
-			m.put("clientId", clientId);
+		LoginRequest request = new LoginRequest();
+		request.setUsername(email);
+		request.setPassword(password);
+		request.setToken(true);
+		request.setClientId(clientId);
+		request.setClientSecret(clientSecret);
 		
-		if (clientSecret != null)
-			m.put("clientSecret", clientSecret);
-		
-		
-		return getClient().doPost(Types.LOGIN_RESPONSE, Users.LOGIN, m, handler);		
+		final Z5HttpClient client = getClient();
+		return client.doPost(Types.LOGIN_RESPONSE, Users.LOGIN, request, new Z5HttpResponseHandler<LoginResponse>() {
+
+			@Override
+			public void onSuccess(int code, LoginResponse result) {
+				OAuthToken token = new OAuthToken(result);
+				client.setToken(token);
+				
+				if (handler != null) {
+					handler.onSuccess(code, result);
+				}
+			}
+
+			@Override
+			public void onError(int code, Z5Error error) {
+				if (handler != null) {
+					handler.onError(code, error);
+				}
+			}
+
+			@Override
+			public void onError(Throwable t, Z5Error error) {
+				if (handler != null) {
+					handler.onError(t, error);
+				}
+			}
+		});		
 	}
 	
 	/** Logout - this will invalidate any active JSESSION and will also invalidate your bearer token */
@@ -89,7 +115,33 @@ public class UserAPI extends AbstractAPI {
 	
 	/** Logout - this will invalidate any active JSESSION and will also invalidate your bearer token */
 	public Future<Z5HttpResponse<Boolean>> logout(Z5HttpResponseHandler<Boolean> handler) {
-		return getClient().doGet(Types.BOOLEAN, Users.LOGOUT, handler);
+		return getClient().doGet(Types.BOOLEAN, Users.LOGOUT, new Z5HttpResponseHandler<Boolean>() {
+
+			@Override
+			public void onSuccess(int code, Boolean result) {
+				if (result) {
+					getClient().setToken(null);
+				}
+				
+				if (handler != null) {
+					handler.onSuccess(code, result);
+				}
+			}
+
+			@Override
+			public void onError(int code, Z5Error error) {
+				if (handler != null) {
+					handler.onError(code, error);
+				}
+			}
+
+			@Override
+			public void onError(Throwable t, Z5Error error) {
+				if (handler != null) {
+					handler.onError(t, error);
+				}
+			}
+		});		
 	}
 	
 	/** Test if an email address is already registered in the system - true if the email already exists in the system */
@@ -132,10 +184,10 @@ public class UserAPI extends AbstractAPI {
 	/** Change a user's password - oldPassword is only required in Specialized environment */
 	public Future<Z5HttpResponse<Void>> changePassword(String oldPassword, String newPassword, Z5HttpResponseHandler<Void> handler) {
 		if (getClient().isSpecialized()) {
-			Map<String, String> m = new HashMap<>(2);
-			m.put("oldPassword", oldPassword);
-			m.put("newPassword", newPassword);
-			return getClient().doPost(Types.VOID, Users.CHANGE_PASSWORD_SPECIALIZED, m, handler);
+			NewPassword request = new NewPassword();
+			request.setOldPassword(oldPassword);
+			request.setNewPassword(newPassword);
+			return getClient().doPost(Types.VOID, Users.CHANGE_PASSWORD_SPECIALIZED, request, handler);
 		} else {
 			User u = new User();
 			u.setPassword(newPassword);
@@ -145,12 +197,36 @@ public class UserAPI extends AbstractAPI {
 	}
 	
 	/** Refresh a bearer token - get a new token if the current one is nearing expiry */
-	public Future<Z5HttpResponse<OAuthTokenAlt>> refreshToken() {
+	public Future<Z5HttpResponse<OAuthToken>> refreshToken() {
 		return refreshToken(null);
 	}
 	
 	/** Refresh a bearer token - get a new token if the current one is nearing expiry */
-	public Future<Z5HttpResponse<OAuthTokenAlt>> refreshToken(Z5HttpResponseHandler<OAuthTokenAlt> handler) {
-		return getClient().doGet(Types.OAUTHTOKENALT, Users.REFRESH_TOKEN, handler);
+	public Future<Z5HttpResponse<OAuthToken>> refreshToken(Z5HttpResponseHandler<OAuthToken> handler) {
+		return getClient().doGet(Types.OAUTHTOKENALT, Users.REFRESH_TOKEN, new Z5HttpResponseHandler<OAuthToken>() {
+
+			@Override
+			public void onSuccess(int code, OAuthToken result) {
+				getClient().setToken(result);
+				
+				if (handler != null) {
+					handler.onSuccess(code, result);
+				}
+			}
+
+			@Override
+			public void onError(int code, Z5Error error) {
+				if (handler != null) {
+					handler.onError(code, error);
+				}
+			}
+
+			@Override
+			public void onError(Throwable t, Z5Error error) {
+				if (handler != null) {
+					handler.onError(t, error);
+				}
+			}
+		});		
 	}
 }

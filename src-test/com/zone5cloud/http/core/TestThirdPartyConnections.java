@@ -1,26 +1,33 @@
 package com.zone5cloud.http.core;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.concurrent.ExecutionException;
+
+import org.junit.Before;
 import org.junit.Test;
 
-import com.zone5cloud.http.core.api.ThirdPartyConnectionsAPI;
-import com.zone5cloud.http.core.responses.Z5HttpResponse;
 import com.zone5cloud.core.enums.UserConnectionsType;
 import com.zone5cloud.core.thirdpartyconnections.PushRegistration;
 import com.zone5cloud.core.thirdpartyconnections.PushRegistrationResponse;
 import com.zone5cloud.core.thirdpartyconnections.ThirdPartyToken;
 import com.zone5cloud.core.thirdpartyconnections.ThirdPartyTokenResponse;
-import com.zone5cloud.core.thirdpartyconnections.UpgradeAvailableResponse;
+import com.zone5cloud.http.core.api.ThirdPartyConnectionsAPI;
+import com.zone5cloud.http.core.responses.Z5HttpResponse;
 
 public class TestThirdPartyConnections extends BaseTest {
 
 	ThirdPartyConnectionsAPI api = new ThirdPartyConnectionsAPI();
+	
+	@Before
+	public void setup() throws InterruptedException, ExecutionException {
+		login();
+	}
 	
 	@Test
 	public void testThirdPartyTokenCrud() throws Exception {
@@ -73,27 +80,5 @@ public class TestThirdPartyConnections extends BaseTest {
 		assertTrue(response2.getStatusCode() >= 200 && response2.getStatusCode() < 300);
 		assertNull(response2.getError());
 	}
-	
-	@Test
-	public void testDeprecated() throws Exception {
-		Z5HttpResponse<UpgradeAvailableResponse> response = api.getDeprecated().get();
-		assertTrue(response.getStatusCode() >= 200 && response.getStatusCode() < 300);
-		assertNull(response.getError());
-		assertNotNull(response.getResult());
-		
-		assertFalse(response.getResult().getIsUpgradeAvailable());
-		
-		// Now do it again but set the client agent such that getDeprecated will return true
-		Z5HttpClient.get().setUserAgent("ride-iOS/1.2.3 (10)");
-		
-		response = api.getDeprecated().get();
-		assertTrue(response.getStatusCode() >= 200 && response.getStatusCode() < 300);
-		assertNull(response.getError());
-		assertNotNull(response.getResult());
-		
-		assertTrue(response.getResult().getIsUpgradeAvailable());
-		
-	}
-	
 
 }

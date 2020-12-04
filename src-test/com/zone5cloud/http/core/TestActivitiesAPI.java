@@ -13,7 +13,9 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.zone5cloud.core.activities.DataFileUploadContext;
@@ -39,6 +41,11 @@ import com.zone5cloud.http.core.api.ActivitiesAPI;
 public class TestActivitiesAPI extends BaseTest {
 
 	ActivitiesAPI api = new ActivitiesAPI();
+	
+	@Before
+	public void setup() throws InterruptedException, ExecutionException {
+		login();
+	}
 	
 	@Test
 	public void testUploadWithNoMetadata() throws Exception {
@@ -125,6 +132,7 @@ public class TestActivitiesAPI extends BaseTest {
 		search.setCriteria(new UserWorkoutFileSearch());		
 		search.getCriteria().setActivities(Arrays.asList(new VActivity(r.getResultId(), ActivityResultType.files)));		
 		MappedSearchResult<UserWorkoutResult> results = api.search(search, 0, 1).get().getResult();
+		assertNotNull(results);
 				
 		// Delete it
 		assertTrue(api.delete(ActivityResultType.files, r.getResultId()).get().getResult());
