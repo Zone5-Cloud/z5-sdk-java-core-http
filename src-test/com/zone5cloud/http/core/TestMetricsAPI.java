@@ -24,8 +24,8 @@ public class TestMetricsAPI extends BaseTest {
 	
 	@Test
 	public void testQuery() throws Exception {
-		if (BIKE_UUID != null && !BIKE_UUID.isEmpty()) {
-			MappedResult<UserWorkoutResultAggregates> result = api.getBikeMetrics(null, Arrays.asList("sum.training","sum.distance","sum.ascent","wavg.avgSpeed","max.maxSpeed","wavg.avgWatts","max.maxWatts"), Arrays.asList(BIKE_UUID)).get().getResult();
+		if (TEST_BIKE_UUID != null && !TEST_BIKE_UUID.isEmpty()) {
+			MappedResult<UserWorkoutResultAggregates> result = api.getBikeMetrics(null, Arrays.asList("sum.training","sum.distance","sum.ascent","wavg.avgSpeed","max.maxSpeed","wavg.avgWatts","max.maxWatts"), Arrays.asList(TEST_BIKE_UUID)).get().getResult();
 			assertNotNull(result.getResults());
 			// Assuming you have a match for this bike id, you would have result which looks like;
 			/* {

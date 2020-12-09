@@ -81,7 +81,8 @@ public class Z5HttpClient implements Closeable {
 	/** Uses a default HttpClient. For production apps, you can use the other constructor to pass in your own HttpClient instance */
 	public Z5HttpClient() {
 		
-		this(HttpClients.createDefault(), new ILogger() {
+		this(HttpClients.createDefault(), null);
+		setLogger(new ILogger() {
 			
 			@Override
 			public void info(String fmt, Object... args) {
@@ -94,8 +95,11 @@ public class Z5HttpClient implements Closeable {
 			
 			@Override
 			public void error(Throwable t) {
-				t.printStackTrace();
-				
+				if (debug) {
+					t.printStackTrace();
+				} else {
+					System.out.println(t.getMessage());
+				}
 			}
 		});
 	}
@@ -120,11 +124,9 @@ public class Z5HttpClient implements Closeable {
 		synchronized(setTokenLock) {
 			AuthToken oldToken = this.authToken.getAndSet(token);
 			if ((token == null && oldToken != null) || (token != null && !token.equals(oldToken))) {
-				delegateExecutor.execute(new Runnable() {
-					public void run() {
-						for (Z5AuthorizationDelegate delegate: delegates) {
-							delegate.onAuthTokenUpdated(token);
-						}
+				delegateExecutor.execute(() -> {
+					for (Z5AuthorizationDelegate delegate: delegates) {
+						delegate.onAuthTokenUpdated(token);
 					}
 				});
 			}
@@ -313,7 +315,7 @@ public class Z5HttpClient implements Closeable {
 						result.parse();
 					
 					} catch (Exception e) {
-						e.printStackTrace();
+						logger.error(e);
 						result = req.newInstance(e);
 						
 					} finally {
@@ -372,7 +374,7 @@ public class Z5HttpClient implements Closeable {
 	}
 	
 	public <T> Future<Z5HttpResponse<T>> doGet(Type t, String path, Map<String,Object> queryParams, Z5HttpResponseHandler<T> handler) {
-		Z5HttpGet<T> req = new Z5HttpGet<>(t, getURL(path, queryParams, new Object[0]));
+		Z5HttpGet<T> req = new Z5HttpGet<>(t, getURL(path, queryParams));
 		return invokeAsync(req, handler);
 	}
 		

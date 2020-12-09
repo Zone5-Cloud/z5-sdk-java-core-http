@@ -153,15 +153,13 @@ public class ActivitiesAPI extends AbstractAPI {
 	}
 	
 	/** Manually update an activity - ie change a name, or override completed metrics */
-	public Future<Z5HttpResponse<VActivity>> update(ActivityResultType activityType, long activityId, UserWorkoutResult input) {
-		input.setActivity(activityType);
-		input.setActivityId(activityId);
-		return getClient().doGet(Types.ACTIVITY, Activities.UPDATE, null);
+	public Future<Z5HttpResponse<VActivity>> update(UserWorkoutResult input) {
+		return getClient().doPost(Types.ACTIVITY, Activities.UPDATE, input, null);
 	}
 	
 	/** Manually update an activity - ie change a name, or override completed metrics */
-	public Future<Z5HttpResponse<VActivity>> update(ActivityResultType activityType, long activityId, UserWorkoutResult input, Z5HttpResponseHandler<VActivity> handler) {
-		return getClient().doGet(Types.ACTIVITY, Activities.UPDATE, handler);
+	public Future<Z5HttpResponse<VActivity>> update(UserWorkoutResult input, Z5HttpResponseHandler<VActivity> handler) {
+		return getClient().doPost(Types.ACTIVITY, Activities.UPDATE, input, handler);
 	}
 		
 	public Future<Z5HttpResponse<MappedResult<UserWorkoutResult>>> timeInZones(ActivityResultType activityType, long activityId, IntensityZoneType zoneType) {

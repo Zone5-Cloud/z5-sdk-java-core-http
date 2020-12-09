@@ -215,7 +215,7 @@ public class RoutesAPI extends AbstractAPI {
 	
 	/** Update a route from the given json data */
 	public Future<Z5HttpResponse<UserRoute>> updateFromJsonFile(long routeId, UserRoute route, File json) {
-		return createFromJsonFile(route, json, null);
+		return updateFromJsonFile(routeId, route, json, null);
 	}
 	
 	/** Update a route from the given json data */
@@ -226,7 +226,7 @@ public class RoutesAPI extends AbstractAPI {
 	
 	/** Update a route from the given fit data */
 	public Future<Z5HttpResponse<UserRoute>> updateFromFitFile(long routeId, UserRoute route, File fit) {
-		return createFromFitFile(route, fit, null);
+		return updateFromFitFile(routeId, route, fit, null);
 	}
 	
 	/** Update a route from the given fit data */

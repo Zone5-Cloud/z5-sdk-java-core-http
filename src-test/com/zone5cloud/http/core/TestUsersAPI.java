@@ -70,7 +70,7 @@ public class TestUsersAPI extends BaseTest {
 		assertEquals(Locale.getDefault().toString(), user.getLocale());
 		
 		// Note - in S-Digital, the user will need to validate their email before they can login...
-		if (api.getClient().isSpecialized() && clientId != SBC_NO_VERIFICATION_GIGYA) {
+		if (api.getClient().isSpecialized() && TEST_CLIENT_ID == null) {
 			System.out.println("Waiting for confirmation that you have verified your email address ... press Enter when done");
 			System.in.read();
 		}
@@ -127,7 +127,6 @@ public class TestUsersAPI extends BaseTest {
 			
 			// We are no longer valid!
 			assertEquals(401, api.me().get().getStatusCode());
-			
 			assertEquals(401, api.login(email, password, clientId, clientSecret).get().getStatusCode());
 		}
 	}

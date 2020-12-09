@@ -119,7 +119,7 @@ public class UserAPI extends AbstractAPI {
 
 			@Override
 			public void onSuccess(int code, Boolean result) {
-				if (result) {
+				if (result == Boolean.TRUE) {
 					getClient().setToken(null);
 				}
 				

@@ -44,19 +44,31 @@ public class TestOAuthAPI extends BaseTest {
 	
 	@Test
 	public void testRefreshUserToken() throws Exception {
+		UserAPI users = new UserAPI();
+		
 		LoginResponse login = user.login(TEST_EMAIL, TEST_PASSWORD, TEST_CLIENT_ID, TEST_CLIENT_SECRET).get().getResult();
-		User me = new UserAPI().me().get().getResult();
+		User me = users.me().get().getResult();
 		assertEquals(me.getEmail(), TEST_EMAIL);
 		
 		assertNotNull(Z5HttpClient.get().getToken());
 		assertNotNull(Z5HttpClient.get().getToken().getToken());
-		assertNotNull(Z5HttpClient.get().getToken().getRefreshToken());
 		assertNotNull(Z5HttpClient.get().getToken().getTokenExp());
+		if (login.getRefresh() != null) {
+			assertNotNull(Z5HttpClient.get().getToken().getRefreshToken());
+		}
 		
-		OAuthToken response = api.refreshAccessToken(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_EMAIL, login.getRefresh()).get().getResult();
-		assertNotNull(response.getToken());
+		if (login.getRefresh() != null) {
+			OAuthToken response = api.refreshAccessToken(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_EMAIL, login.getRefresh()).get().getResult();
+			assertNotNull(response.getToken());
+		} else if (Z5HttpClient.get().isSpecialized()) {
+			OAuthToken response = users.refreshToken().get().getResult();
+			assertNotNull(response.getToken());
+		} else {
+			OAuthToken response = api.newAccessToken(TEST_CLIENT_ID, TEST_CLIENT_SECRET, "", TEST_EMAIL, TEST_PASSWORD).get().getResult();
+			assertNotNull(response.getToken());
+		}
 		
-		me = new UserAPI().me().get().getResult();
+		me = users.me().get().getResult();
 		assertEquals(me.getEmail(), TEST_EMAIL);
 		
 		assertNotNull(Z5HttpClient.get().getToken());

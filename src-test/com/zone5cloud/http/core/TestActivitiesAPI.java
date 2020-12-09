@@ -181,27 +181,29 @@ public class TestActivitiesAPI extends BaseTest {
 	
 	@Test
 	public void testSpecializedSetRemBikeAssociation() throws Exception {
-		SearchInput<UserWorkoutFileSearch> search = new SearchInput<>(new UserWorkoutFileSearch());
-		search.getCriteria().setIsNotNull(Arrays.asList("fileId"));
-		search.setFields(Arrays.asList("bike.avatar", "bike.serial", "bike.name", "bike.uuid"));
-		MappedSearchResult<UserWorkoutResult> results = api.search(search, 0, 1).get().getResult();
-		assertTrue(results.getCnt() > 0);
-		UserWorkoutResult r = results.getResult().getResults().get(0);
-		assertNull(r.getBike());
-		
-		assertTrue(api.setBikeId(r.getActivity(), r.getActivityId(), "d584c5cb-e81f-4fbe-bc0d-667e9bcd2c4c", null).get().getResult());
-		search.getCriteria().setActivities(Arrays.asList(new VActivity(r.getActivityId(), r.getActivity())));
-		results = api.search(search, 0, 1).get().getResult();
-		r = results.getResult().getResults().get(0);
-		assertNotNull(r.getBike());
-		assertNotNull(r.getBike().getSerial());
-		assertNotNull(r.getBike().getAvatar());
-		assertNotNull(r.getBike().getName());
-		
-		assertTrue(api.removeBikeId(r.getActivity(), r.getActivityId(), null).get().getResult());
-		results = api.search(search, 0, 1).get().getResult();
-		r = results.getResult().getResults().get(0);
-		assertNull(r.getBike());
+		if (TEST_BIKE_UUID != null) {
+			SearchInput<UserWorkoutFileSearch> search = new SearchInput<>(new UserWorkoutFileSearch());
+			search.getCriteria().setIsNotNull(Arrays.asList("fileId"));
+			search.setFields(Arrays.asList("bike.avatar", "bike.serial", "bike.name", "bike.uuid"));
+			MappedSearchResult<UserWorkoutResult> results = api.search(search, 0, 1).get().getResult();
+			assertTrue(results.getCnt() > 0);
+			UserWorkoutResult r = results.getResult().getResults().get(0);
+			assertNull(r.getBike());
+			
+			assertTrue(api.setBikeId(r.getActivity(), r.getActivityId(), TEST_BIKE_UUID, null).get().getResult());
+			search.getCriteria().setActivities(Arrays.asList(new VActivity(r.getActivityId(), r.getActivity())));
+			results = api.search(search, 0, 1).get().getResult();
+			r = results.getResult().getResults().get(0);
+			assertNotNull(r.getBike());
+			assertNotNull(r.getBike().getSerial());
+			assertNotNull(r.getBike().getAvatar());
+			assertNotNull(r.getBike().getName());
+			
+			assertTrue(api.removeBikeId(r.getActivity(), r.getActivityId(), null).get().getResult());
+			results = api.search(search, 0, 1).get().getResult();
+			r = results.getResult().getResults().get(0);
+			assertNull(r.getBike());
+		}
 	}
 	
 	
