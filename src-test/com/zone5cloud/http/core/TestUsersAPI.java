@@ -38,6 +38,22 @@ public class TestUsersAPI extends BaseTest {
 		login();
 	}
 	
+	@Test
+	public void testLoginLogout() throws Exception {
+		Z5HttpResponse<LoginResponse> response = api.login(TEST_EMAIL, TEST_PASSWORD, clientId, clientSecret).get();
+		assertEquals(200, response.getStatusCode());
+		LoginResponse login = response.getResult();
+		assertNotNull(login);
+		assertNotNull(login.getToken());
+		assertEquals(login.getToken(), Z5HttpClient.get().getToken().getToken());
+		
+		Z5HttpResponse<Boolean> logout = api.logout().get();
+		assertEquals(200, logout.getStatusCode());
+		assertNotNull(logout.getResult());
+		assertTrue(logout.getResult().booleanValue());
+		assertNull(Z5HttpClient.get().getToken());
+	}
+	
 	/** To run this test you need a valid clientId & secret */
 	@Test
 	public void testRegistrationLoginDelete() throws Exception {
