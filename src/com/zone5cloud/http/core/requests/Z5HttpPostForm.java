@@ -29,7 +29,7 @@ public class Z5HttpPostForm<T> extends HttpPost implements Z5HttpRequest<T> {
 		
 		StringBuilder entity = new StringBuilder();
 	    boolean first = true;
-	    Field fields[] = obj.getClass().getDeclaredFields();
+	    Field[] fields = obj.getClass().getDeclaredFields();
     	if (fields != null) {
     		for (Field f: fields) {    			
     			SerializedName ann = f.getAnnotation(SerializedName.class);

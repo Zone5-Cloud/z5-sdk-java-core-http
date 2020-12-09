@@ -3,6 +3,7 @@ package com.zone5cloud.http.core.responses;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -27,9 +28,10 @@ public class Z5HttpResponseFile extends Z5HttpResponse<File> {
 	
 	@Override
 	protected File deserialize(InputStream is) throws IOException {
-		if (file.exists())
-			file.delete();
-		FileUtils.copyInputStreamToFile(is, file);
+		if (file != null) {
+			Files.deleteIfExists(file.toPath());
+			FileUtils.copyInputStreamToFile(is, file);
+		}
 		return file;
 	}
 	

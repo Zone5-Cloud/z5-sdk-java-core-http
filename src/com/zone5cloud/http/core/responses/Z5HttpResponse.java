@@ -33,6 +33,7 @@ public abstract class Z5HttpResponse<T> {
 	protected Z5HttpResponse(Exception e) {
 		this.code = -1;
 		this.rsp = null;
+		this.e = e;
 	}
 	
 	public boolean isSuccess() {
