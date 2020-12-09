@@ -25,12 +25,12 @@ public abstract class Z5HttpResponse<T> {
 	
 	protected Exception e = null;
 	
-	public Z5HttpResponse(CloseableHttpResponse rsp) {
+	protected Z5HttpResponse(CloseableHttpResponse rsp) {
 		this.code = rsp.getStatusLine().getStatusCode();
 		this.rsp = rsp;
 	}
 	
-	public Z5HttpResponse(Exception e) {
+	protected Z5HttpResponse(Exception e) {
 		this.code = -1;
 		this.rsp = null;
 	}
