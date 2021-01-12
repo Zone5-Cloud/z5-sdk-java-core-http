@@ -65,12 +65,12 @@ public class UserAPI extends AbstractAPI {
 		return getClient().doGet(Types.VOID, Users.DELETE_USER.replace("{userId}", ""+userId), handler);		
 	}
 
-	/** Login as a user and obtain a bearer token - clientId and clientSecret are not required in Specialized featureset */
+	/** Login as a user and obtain a bearer token - clientId and clientSecret are for cognito, not required for Gigya */
 	public Future<Z5HttpResponse<LoginResponse>> login(String email, String password, String clientId, String clientSecret) {
 		return login(email, password, clientId, clientSecret, null);
 	}		
 	
-	/** Login as a user and obtain a bearer token - clientId and clientSecret are not required in Specialized featureset */
+	/** Login as a user and obtain a bearer token - clientId and clientSecret are for cognito, not required for Gigya */
 	public Future<Z5HttpResponse<LoginResponse>> login(String email, String password, String clientId, String clientSecret, Z5HttpResponseHandler<LoginResponse> handler) {
 		LoginRequest request = new LoginRequest();
 		request.setUsername(email);
@@ -78,6 +78,16 @@ public class UserAPI extends AbstractAPI {
 		request.setToken(true);
 		request.setClientId(clientId);
 		request.setClientSecret(clientSecret);
+		return login(request, handler);
+	}
+		
+	/** Login as a user and obtain a bearer token - clientId and clientSecret are for cognito, not required for Gigya */
+	public Future<Z5HttpResponse<LoginResponse>> login(LoginRequest request) {
+		return login(request, null);
+	}
+	
+	/** Login as a user and obtain a bearer token - clientId and clientSecret are for cognito, not required for Gigya */
+	public Future<Z5HttpResponse<LoginResponse>> login(LoginRequest request, Z5HttpResponseHandler<LoginResponse> handler) {
 		
 		final Z5HttpClient client = getClient();
 		return client.doPost(Types.LOGIN_RESPONSE, Users.LOGIN, request, new Z5HttpResponseHandler<LoginResponse>() {

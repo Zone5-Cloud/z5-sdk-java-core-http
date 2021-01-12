@@ -9,7 +9,6 @@ import com.zone5cloud.core.oauth.OAuthToken;
 import com.zone5cloud.core.oauth.OAuthTokenRequest;
 import com.zone5cloud.core.users.Users;
 import com.zone5cloud.http.core.AbstractAPI;
-import com.zone5cloud.http.core.Z5HttpClient;
 import com.zone5cloud.http.core.responses.Z5HttpResponse;
 import com.zone5cloud.http.core.responses.Z5HttpResponseHandler;
 
@@ -34,35 +33,7 @@ public class OAuthAPI extends AbstractAPI {
 		request.setRedirect(redirect);
 		request.setGrantType(GrantType.USERNAME_PASSWORD);
 		
-		final Z5HttpClient client = getClient();
-		
-		return getClient().doFormPost(Types.OAUTHTOKEN, Users.NEW_ACCESS_TOKEN, request, new Z5HttpResponseHandler<OAuthToken>() {
-
-			@Override
-			public void onSuccess(int code, OAuthToken result) {
-				if (result.getExpiresIn() != null) {
-					result.setTokenExp(System.currentTimeMillis() + (result.getExpiresIn() * 1000));
-				}
-				client.setToken(result);
-				if (handler != null) {
-					handler.onSuccess(code, result);
-				}
-			}
-
-			@Override
-			public void onError(int code, Z5Error error) {
-				if (handler != null) {
-					handler.onError(code, error);
-				}
-			}
-
-			@Override
-			public void onError(Throwable t, Z5Error error) {
-				if (handler != null) {
-					handler.onError(t, error);
-				}
-			}
-		});
+		return getClient().doFormPost(Types.OAUTHTOKEN, Users.NEW_ACCESS_TOKEN, request, handleToken(handler, true));
 	}
 	
 	/**
@@ -83,53 +54,34 @@ public class OAuthAPI extends AbstractAPI {
 		request.setClientSecret(secret);
 		request.setGrantType(GrantType.REFRESH_TOKEN);
 		
-		final Z5HttpClient client = getClient();
-		return client.doFormPost(Types.OAUTHTOKEN, Users.NEW_ACCESS_TOKEN, request, new Z5HttpResponseHandler<OAuthToken>() {
-
-			@Override
-			public void onSuccess(int code, OAuthToken result) {
-				if (result.getExpiresIn() != null) {
-					result.setTokenExp(System.currentTimeMillis() + (result.getExpiresIn() * 1000));
-				}
-				client.setToken(result);
-				if (handler != null) {
-					handler.onSuccess(code, result);
-				}
-			}
-
-			@Override
-			public void onError(int code, Z5Error error) {
-				if (handler != null) {
-					handler.onError(code, error);
-				}
-			}
-
-			@Override
-			public void onError(Throwable t, Z5Error error) {
-				if (handler != null) {
-					handler.onError(t, error);
-				}
-			}
-		});
+		return getClient().doFormPost(Types.OAUTHTOKEN, Users.NEW_ACCESS_TOKEN, request, handleToken(handler, true));
 	}
 	
 	/**
-	 * Refresh auth token with refresh token
+	 * Fetch an adhoc auth token on behalf of another app
 	 */
 	public Future<Z5HttpResponse<OAuthToken>> adhocAccessToken(String clientId) {
 		return adhocAccessToken(clientId, null);
 	}
 	
 	/**
-	 * Refresh auth token with refresh token
+	 * Fetch an adhoc auth token on behalf of another app
 	 */
 	public Future<Z5HttpResponse<OAuthToken>> adhocAccessToken(String clientID, Z5HttpResponseHandler<OAuthToken> handler) {
-		return getClient().doGet(Types.OAUTHTOKEN, Users.NEW_ADHOC_ACCESS_TOKEN.replace("{clientId}", clientID), new Z5HttpResponseHandler<OAuthToken>() {
+		return getClient().doGet(Types.OAUTHTOKEN, Users.NEW_ADHOC_ACCESS_TOKEN.replace("{clientId}", clientID), handleToken(handler, false));
+	}
+	
+	private Z5HttpResponseHandler<OAuthToken> handleToken(final Z5HttpResponseHandler<OAuthToken> handler, final boolean saveToken) {
+		return new Z5HttpResponseHandler<OAuthToken>() {
 
 			@Override
 			public void onSuccess(int code, OAuthToken result) {
 				if (result.getExpiresIn() != null) {
 					result.setTokenExp(System.currentTimeMillis() + (result.getExpiresIn() * 1000));
+				}
+				
+				if (saveToken) {
+					getClient().setToken(result);
 				}
 				
 				if (handler != null) {
@@ -150,6 +102,6 @@ public class OAuthAPI extends AbstractAPI {
 					handler.onError(t, error);
 				}
 			}
-		});
+		};
 	}
 }
