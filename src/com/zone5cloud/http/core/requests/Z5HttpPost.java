@@ -6,9 +6,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 
+import com.zone5cloud.core.utils.GsonManager;
 import com.zone5cloud.http.core.responses.Z5HttpResponse;
 import com.zone5cloud.http.core.responses.Z5HttpResponseJson;
-import com.zone5cloud.core.utils.GsonManager;
 
 public class Z5HttpPost<T> extends HttpPost implements Z5HttpRequest<T> {
 	

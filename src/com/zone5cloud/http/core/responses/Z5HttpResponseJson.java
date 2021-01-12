@@ -50,12 +50,14 @@ public class Z5HttpResponseJson<T> extends Z5HttpResponse<T> {
 			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(js, ArrayList.class));
 		else if (js != null)
 			return js;
-		else if (error != null && error.startsWith("{"))
-			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(error, Map.class));
-		else if (error != null && error.startsWith("["))
-			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(error, ArrayList.class));
 		else if (error != null)
-			return error;
+			return GsonManager.getInstance().toJson(error);
+		else if (rawError != null && rawError.startsWith("{"))
+			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(rawError, Map.class));
+		else if (rawError != null && rawError.startsWith("["))
+			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(rawError, ArrayList.class));
+		else if (rawError != null)
+			return rawError;
 		return "";
 	}
 }
