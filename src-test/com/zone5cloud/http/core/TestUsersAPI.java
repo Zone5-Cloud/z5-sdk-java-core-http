@@ -29,10 +29,6 @@ public class TestUsersAPI extends BaseTest {
 
 	UserAPI api = new UserAPI();
 	
-	// This is your allocated clientId and secret - these can be set to null for S-Digital environments
-	String clientId = "1er3227s1mia3pkqrngntl4sv6"; 	// "<your OAuth clientId issued by Zone5>";
-	String clientSecret = "19re5046mf15n5m38klrmnr9sjtcia4sdv4hpn0ivoshm1tu72cp"; // "<your OAuth secret issued by Zone5>";
-	
 	@Before
 	public void setup() throws InterruptedException, ExecutionException {
 		login();
@@ -40,7 +36,7 @@ public class TestUsersAPI extends BaseTest {
 	
 	@Test
 	public void testLoginLogout() throws Exception {
-		Z5HttpResponse<LoginResponse> response = api.login(TEST_EMAIL, TEST_PASSWORD, clientId, clientSecret).get();
+		Z5HttpResponse<LoginResponse> response = api.login(TEST_EMAIL, TEST_PASSWORD, TEST_CLIENT_ID, TEST_CLIENT_SECRET).get();
 		assertEquals(200, response.getStatusCode());
 		LoginResponse login = response.getResult();
 		assertNotNull(login);
@@ -83,7 +79,7 @@ public class TestUsersAPI extends BaseTest {
 		User user = api.register(register).get().getResult();
 		assertNotNull(user.getId()); // our unique userId
 		assertEquals(email, user.getEmail());
-		assertEquals(Locale.getDefault().toString(), user.getLocale());
+		assertEquals(Locale.getDefault().toString().toLowerCase(), user.getLocale());
 		
 		// Note - in S-Digital, the user will need to validate their email before they can login...
 		if (api.getClient().isSpecialized() && TEST_CLIENT_ID == null) {
@@ -92,7 +88,7 @@ public class TestUsersAPI extends BaseTest {
 		}
 		
 		// Login and set our bearer token
-		Future<Z5HttpResponse<LoginResponse>> f = api.login(email, password, clientId, clientSecret);
+		Future<Z5HttpResponse<LoginResponse>> f = api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
 		LoginResponse r = f.get().getResult();
 		assertNotNull(r.getToken());
 		
@@ -111,7 +107,7 @@ public class TestUsersAPI extends BaseTest {
 		assertTrue(api.resetPassword(email).get().getResult());
 		
 		// Log back in
-		f = api.login(email, password, clientId, clientSecret);
+		f = api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
 		r = f.get().getResult();
 		assertNotNull(r.getToken());
 	
@@ -122,7 +118,7 @@ public class TestUsersAPI extends BaseTest {
 		assertEquals(200, api.changePassword(password, "myNewPassword123!!").get().getStatusCode());
 		assertTrue(api.logout().get().getResult());
 		
-		f = api.login(email, "myNewPassword123!!", clientId, clientSecret);
+		f = api.login(email, "myNewPassword123!!", TEST_CLIENT_ID, TEST_CLIENT_SECRET);
 		r = f.get().getResult();
 		assertNotNull(r.getToken());
 		
@@ -143,7 +139,7 @@ public class TestUsersAPI extends BaseTest {
 			
 			// We are no longer valid!
 			assertEquals(401, api.me().get().getStatusCode());
-			assertEquals(401, api.login(email, password, clientId, clientSecret).get().getStatusCode());
+			assertEquals(401, api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET).get().getStatusCode());
 		}
 	}
 	

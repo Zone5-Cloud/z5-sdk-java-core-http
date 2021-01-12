@@ -124,7 +124,7 @@ public class OAuthAPI extends AbstractAPI {
 	 * Refresh auth token with refresh token
 	 */
 	public Future<Z5HttpResponse<OAuthToken>> adhocAccessToken(String clientID, Z5HttpResponseHandler<OAuthToken> handler) {
-		return getClient().doGet(Types.OAUTHTOKEN, Users.NEW_ADHOC_ACCESS_TOKEN.replace("clientId", clientID), new Z5HttpResponseHandler<OAuthToken>() {
+		return getClient().doGet(Types.OAUTHTOKEN, Users.NEW_ADHOC_ACCESS_TOKEN.replace("{clientId}", clientID), new Z5HttpResponseHandler<OAuthToken>() {
 
 			@Override
 			public void onSuccess(int code, OAuthToken result) {
