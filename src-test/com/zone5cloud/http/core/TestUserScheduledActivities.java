@@ -33,6 +33,9 @@ public class TestUserScheduledActivities extends BaseTest {
 		login();
 	}
 	
+	/**
+	 * Note - I don't appear to have permission to add a new ride...?
+	 */
 	@Test
 	public void testCreateNewRide() throws Exception {
 		

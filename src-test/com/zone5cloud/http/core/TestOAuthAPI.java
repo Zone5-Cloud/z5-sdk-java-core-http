@@ -77,14 +77,14 @@ public class TestOAuthAPI extends BaseTest {
 	@Test
 	public void testAutoRefresh() throws IOException, InterruptedException, ExecutionException {
 		login();
-		
+		// TODO test this with proper refresh
 		AuthToken currentToken = Z5HttpClient.get().getToken();
 		
 		// expire the token to force the refresh sequence
 		OAuthToken expiredToken = new OAuthToken();
 		expiredToken.setToken(currentToken.getToken());
 		expiredToken.setRefreshToken(currentToken.getRefreshToken());
-		expiredToken.setTokenExp(System.currentTimeMillis());
+		expiredToken.setTokenExp(System.currentTimeMillis() - 1);
 		Z5HttpClient.get().setToken(expiredToken);
 		
 		User me = user.me().get().getResult();
@@ -110,8 +110,7 @@ public class TestOAuthAPI extends BaseTest {
 		final Semaphore s1 = new Semaphore(0);
 		final Semaphore s2 = new Semaphore(0);
 		final AtomicBoolean shouldTrigger = new AtomicBoolean(false);
-		Z5HttpClient.get().close();
-		Z5HttpClient client = Z5HttpClient.get();
+		Z5HttpClient client = new Z5HttpClient();
 		
 		Z5AuthorizationDelegate delegate1 = new Z5AuthorizationDelegate() {
 			
@@ -139,11 +138,11 @@ public class TestOAuthAPI extends BaseTest {
 		
 		assertEquals(2, client.delegates.size());
 		
-		Z5HttpClient.get().unsubscribe(delegate2);
+		client.unsubscribe(delegate2);
 		
 		assertEquals(1, client.delegates.size());
 		assertTrue(client.delegates.contains(delegate1));
-		Z5HttpClient.get().setToken(new OAuthToken());
+		client.setToken(new OAuthToken());
 		s1.acquire();
 		
 		assertTrue(d1.get());
@@ -151,7 +150,7 @@ public class TestOAuthAPI extends BaseTest {
 		// reset for next test
 		d1.set(false);
 		
-		Z5HttpClient.get().subscribe(delegate2);
+		client.subscribe(delegate2);
 		assertEquals(2, client.delegates.size());
 		shouldTrigger.set(true);
 		assertTrue(client.delegates.contains(delegate1));
@@ -159,7 +158,7 @@ public class TestOAuthAPI extends BaseTest {
 		
 		assertFalse(d1.get());
 		assertFalse(d2.get());
-		Z5HttpClient.get().setToken(null);
+		client.setToken(null);
 		s1.acquire();
 		s2.acquire();
 		assertTrue(d1.get());
@@ -174,7 +173,7 @@ public class TestOAuthAPI extends BaseTest {
 	public void testDelegateOrder() throws InterruptedException, ExecutionException {
 		final ConcurrentHashMap<String, ConcurrentLinkedQueue<Long>> changes = new ConcurrentHashMap<>();
 		final Semaphore semaphore = new Semaphore(-39);
-		final Z5HttpClient client = Z5HttpClient.get();
+		final Z5HttpClient client = new Z5HttpClient();
 		
 		Z5AuthorizationDelegate delegate = new Z5AuthorizationDelegate() {
 			
@@ -188,45 +187,50 @@ public class TestOAuthAPI extends BaseTest {
 			}
 		};
 		
-		client.subscribe(delegate);
-		
-		class Run implements Callable<String> {
-			private final String name;
+		try {
+			client.subscribe(delegate);
 			
-			Run(String name) {
-				this.name = name;
-			}
-			
-			@Override
-			public String call() {
-				for (int i = 0; i < 10; i++) {
-					OAuthToken token = new OAuthToken();
-					token.setToken(name + ":" + i);
-					client.setToken(token);
+			class Run implements Callable<String> {
+				private final String name;
+				
+				Run(String name) {
+					this.name = name;
 				}
-				return name;
+				
+				@Override
+				public String call() {
+					for (int i = 0; i < 10; i++) {
+						OAuthToken token = new OAuthToken();
+						token.setToken(name + ":" + i);
+						client.setToken(token);
+					}
+					return name;
+				}
 			}
-		}
-		
-		ExecutorService executor = Executors.newFixedThreadPool(5);
-		Set<Run> tasks = new HashSet<>();
-		tasks.add(new Run("a"));
-		tasks.add(new Run("b"));
-		tasks.add(new Run("c"));
-		tasks.add(new Run("d"));
-		
-		executor.invokeAll(tasks);
-		semaphore.acquire();
-		
-		
-		for (Run r: tasks) {
-			ConcurrentLinkedQueue<Long> list = changes.get(r.name);
-			Long previous = -1l;
-			for (Long l: list) {
-				System.out.println(r.name + ": " + l);
-				assertTrue(l > previous);
-				previous = l;
+			
+			ExecutorService executor = Executors.newFixedThreadPool(5);
+			Set<Run> tasks = new HashSet<>();
+			tasks.add(new Run("a"));
+			tasks.add(new Run("b"));
+			tasks.add(new Run("c"));
+			tasks.add(new Run("d"));
+			
+			executor.invokeAll(tasks);
+			semaphore.acquire();
+			
+			
+			for (Run r: tasks) {
+				ConcurrentLinkedQueue<Long> list = changes.get(r.name);
+				Long previous = -1l;
+				for (Long l: list) {
+					System.out.println(r.name + ": " + l);
+					assertTrue(l > previous);
+					previous = l;
+				}
 			}
+		} finally {
+			client.unsubscribe(delegate);
+			client.close();
 		}
 	}
 	

@@ -82,7 +82,7 @@ public class TestUsersAPI extends BaseTest {
 		assertEquals(Locale.getDefault().toString().toLowerCase(), user.getLocale());
 		
 		// Note - in S-Digital, the user will need to validate their email before they can login...
-		if (api.getClient().isSpecialized() && TEST_CLIENT_ID == null) {
+		if (api.getClient().isSpecialized()) {
 			System.out.println("Waiting for confirmation that you have verified your email address ... press Enter when done");
 			System.in.read();
 		}

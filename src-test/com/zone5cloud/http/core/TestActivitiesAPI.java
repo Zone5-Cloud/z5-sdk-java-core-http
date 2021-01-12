@@ -232,9 +232,11 @@ public class TestActivitiesAPI extends BaseTest {
 		// Get the next batch of 10
 		if (results.getCnt() > 10) {
 			results = api.next(10, 10).get().getResult();
-			assertTrue(results.getResult().getResults().size() <= 10);
-			for(int i=1;i<results.getResult().getResults().size();i++)
-				assertTrue(results.getResult().getResults().get(i).getStartTs() <= results.getResult().getResults().get(i-1).getStartTs());
+			if (results.getResult() != null) {
+				assertTrue(results.getResult().getResults().size() <= 10);
+				for(int i=1;i<results.getResult().getResults().size();i++)
+					assertTrue(results.getResult().getResults().get(i).getStartTs() <= results.getResult().getResults().get(i-1).getStartTs());
+			}
 		}
 	}
 	

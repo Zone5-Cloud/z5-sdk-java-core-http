@@ -7,9 +7,8 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URLEncoder;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -68,7 +67,7 @@ public class Z5HttpClient implements Closeable {
 	private String clientSecret = null;
 	
 	private ILogger logger = null;
-	protected final Set<Z5AuthorizationDelegate> delegates = new HashSet<>();
+	protected final ConcurrentHashMap<Z5AuthorizationDelegate, Z5AuthorizationDelegate> delegates = new ConcurrentHashMap<>();
 	private final ExecutorService delegateExecutor = Executors.newSingleThreadExecutor();
 	private final Object setTokenLock = new Object();
 	private final Object refreshLock = new Object();
@@ -125,7 +124,7 @@ public class Z5HttpClient implements Closeable {
 			AuthToken oldToken = this.authToken.getAndSet(token);
 			if ((token == null && oldToken != null) || (token != null && !token.equals(oldToken))) {
 				delegateExecutor.execute(() -> {
-					for (Z5AuthorizationDelegate delegate: delegates) {
+					for (Z5AuthorizationDelegate delegate: delegates.values()) {
 						delegate.onAuthTokenUpdated(token);
 					}
 				});
@@ -138,7 +137,7 @@ public class Z5HttpClient implements Closeable {
 	}
 	
 	public void subscribe(Z5AuthorizationDelegate delegate) {
-		this.delegates.add(delegate);
+		this.delegates.put(delegate, delegate);
 	}
 	
 	public void unsubscribe(Z5AuthorizationDelegate delegate) {
