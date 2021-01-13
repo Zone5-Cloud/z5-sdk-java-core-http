@@ -239,4 +239,24 @@ public class UserAPI extends AbstractAPI {
 			}
 		});		
 	}
+
+	/** Return PasswordComplexity regex string */
+	public Future<Z5HttpResponse<String>> passwordComplexity(){
+		return passwordComplexity(null);
+	}
+
+	private Future<Z5HttpResponse<String>> passwordComplexity(Z5HttpResponseHandler handler){
+		return getClient().doGet(Types.STRING, Users.PASSWORD_COMPLEXITY,null, handler);
+	}
+
+	/** Reconfirm email */
+	public Future<Z5HttpResponse<Void>> reconfirm(String email){
+		return reconfirm(email,null);
+	}
+
+	private Future<Z5HttpResponse<Void>> reconfirm(String email, Z5HttpResponseHandler handler){
+		Map<String, Object> queryParams = new HashMap<>(1);
+		queryParams.put("email", email);
+		return getClient().doGet(Types.VOID, Users.RECONFIRM, queryParams, handler);
+	}
 }

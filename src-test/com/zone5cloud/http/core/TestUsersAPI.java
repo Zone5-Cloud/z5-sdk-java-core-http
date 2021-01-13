@@ -209,4 +209,17 @@ public class TestUsersAPI extends BaseTest {
 		
 	}
 
+	@Test
+	public void testReconfirm() throws Exception {
+		Z5HttpResponse<Void> response = api.reconfirm(TEST_EMAIL).get();
+		assertTrue(response.isSuccess());
+	}
+
+	@Test
+	public void testPasswordComplexityApi() throws Exception {
+		Z5HttpResponse<String> response = api.passwordComplexity().get();
+		assertNotNull(response.getResult());
+		assertEquals("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$", response.getResult());
+	}
+
 }
