@@ -18,15 +18,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.zone5cloud.core.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-import com.zone5cloud.core.Endpoints;
-import com.zone5cloud.core.Types;
-import com.zone5cloud.core.Z5AuthorizationDelegate;
-import com.zone5cloud.core.Z5Error;
 import com.zone5cloud.core.enums.GrantType;
 import com.zone5cloud.core.enums.Z5HttpHeader;
 import com.zone5cloud.core.oauth.AuthToken;
@@ -48,9 +45,11 @@ import com.zone5cloud.http.core.responses.Z5HttpResponseJson;
 public class Z5HttpClient implements Closeable {
 		
 	public static final ThreadLocal<Z5HttpClient> THREADLOCAL = new ThreadLocal<>();
-	
+
+
 	public static Z5HttpClient get() {
 		Z5HttpClient c = THREADLOCAL.get();
+
 		if (c == null) {
 			c = new Z5HttpClient();
 			THREADLOCAL.set(c);
@@ -65,7 +64,9 @@ public class Z5HttpClient implements Closeable {
 	private String userAgent = null;
 	private String clientID = null;
 	private String clientSecret = null;
-	
+	private String userName = null;
+	private static ClientConfig clientConfig = null;
+
 	private ILogger logger = null;
 	protected final ConcurrentHashMap<Z5AuthorizationDelegate, Z5AuthorizationDelegate> delegates = new ConcurrentHashMap<>();
 	private final ExecutorService delegateExecutor = Executors.newSingleThreadExecutor();
@@ -79,7 +80,7 @@ public class Z5HttpClient implements Closeable {
 	
 	/** Uses a default HttpClient. For production apps, you can use the other constructor to pass in your own HttpClient instance */
 	public Z5HttpClient() {
-		
+
 		this(HttpClients.createDefault(), null);
 		setLogger(new ILogger() {
 			
@@ -110,7 +111,8 @@ public class Z5HttpClient implements Closeable {
 	}
 	
 	public boolean isSpecialized() {
-		return this.hostname != null && (this.hostname.equals("api-sp.todaysplan.com.au") || this.hostname.equals("api-sp-staging.todaysplan.com.au"));
+		return this.hostname != null && (this.hostname.equals("api-sp.todaysplan.com.au")
+									 || this.hostname.equals("api-sp-staging.todaysplan.com.au"));
 	}
 	
 	/** Enable verbose debug logging */
@@ -173,7 +175,18 @@ public class Z5HttpClient implements Closeable {
 		else
 			this.protocol = "https";
 	}
-	
+
+	public void setClientConfig(ClientConfig clientConfig){
+		this.clientConfig = clientConfig;
+		this.authToken.set(clientConfig.getToken());
+		this.clientSecret = clientConfig.getClientSecret();
+		this.clientID = clientConfig.getClientID();
+		this.userName = clientConfig.getUserName();
+	}
+
+	public void setUserName(String userName){
+		this.userName = userName;
+	}
 	/**
 	 * Add headers: 
 	 * * add authorization header

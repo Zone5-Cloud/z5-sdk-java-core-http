@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import com.zone5cloud.core.ClientConfig;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 
@@ -20,8 +21,7 @@ public abstract class BaseTest {
 	/* SET YOUR SERVER ENDPOINT HERE */
 	protected String TEST_SERVER = "";
 	// This is your allocated clientId and secret - these can be set to null for S-Digital environments
-    protected String TEST_CLIENT_ID = ""; //"<your OAuth clientId issued by Zone5>";
-    protected String TEST_CLIENT_SECRET = "";  //"<your OAuth secret issued by Zone5>";
+	protected ClientConfig clientConfig = new ClientConfig();
 	
     public BaseTest() {
     		// read config ~/tp.env or ~/z5.env
@@ -39,6 +39,7 @@ public abstract class BaseTest {
     						switch(key) {
     						case "username":
     							TEST_EMAIL = value;
+								clientConfig.setUserName(value);
     							break;
     						case "password":
     							TEST_PASSWORD = value;
@@ -47,23 +48,24 @@ public abstract class BaseTest {
     							TEST_SERVER = value;
     							break;
     						case "clientID":
-    							TEST_CLIENT_ID = value;
+								clientConfig.setClientID(value);
     							break;
     						case "clientSecret":
-    							TEST_CLIENT_SECRET = value;
+								clientConfig.setClientSecret(value);
     							break;
     						}
     					}
     				}
     			} catch (Exception e) { }
     			
-    			if (f.exists() && TEST_EMAIL != null || TEST_SERVER != null)
-    				System.out.println(String.format("[ Using credentials in file %s - server=%s, username=%s ]", f.getAbsolutePath(), TEST_SERVER, TEST_EMAIL));
+    			if (f.exists() && clientConfig.getUserName() != null || TEST_SERVER != null)
+    				System.out.println(String.format("[ Using credentials in file %s - server=%s, username=%s ]",
+							f.getAbsolutePath(), TEST_SERVER, clientConfig.getUserName()));
     		}
     }
     
 	protected void login() throws InterruptedException, ExecutionException {
-		new UserAPI().login(TEST_EMAIL, TEST_PASSWORD, TEST_CLIENT_ID, TEST_CLIENT_SECRET).get();
+		new UserAPI().login(TEST_EMAIL, TEST_PASSWORD, clientConfig.getClientID(), clientConfig.getClientSecret()).get();
 	}
 
 	public String getBaseEndpoint() {
@@ -74,8 +76,9 @@ public abstract class BaseTest {
 	
 	@Before
 	public void init() {
+    	Z5HttpClient.get().setClientConfig(clientConfig);
 		Z5HttpClient.get().setHostname(TEST_SERVER);
-		Z5HttpClient.get().setClientIDAndSecret(TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		Z5HttpClient.get().setClientIDAndSecret(clientConfig.getClientID(), clientConfig.getClientSecret());
 		Z5HttpClient.get().setDebug(true);
 	}
 	

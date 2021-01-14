@@ -36,7 +36,7 @@ public class TestUsersAPI extends BaseTest {
 	
 	@Test
 	public void testLoginLogout() throws Exception {
-		Z5HttpResponse<LoginResponse> response = api.login(TEST_EMAIL, TEST_PASSWORD, TEST_CLIENT_ID, TEST_CLIENT_SECRET).get();
+		Z5HttpResponse<LoginResponse> response = api.login(TEST_EMAIL, TEST_PASSWORD, clientConfig.getClientID(), clientConfig.getClientSecret()).get();
 		assertEquals(200, response.getStatusCode());
 		LoginResponse login = response.getResult();
 		assertNotNull(login);
@@ -88,7 +88,7 @@ public class TestUsersAPI extends BaseTest {
 		}
 		
 		// Login and set our bearer token
-		Future<Z5HttpResponse<LoginResponse>> f = api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		Future<Z5HttpResponse<LoginResponse>> f = api.login(email, password, clientConfig.getClientID(), clientConfig.getClientSecret());
 		LoginResponse r = f.get().getResult();
 		assertNotNull(r.getToken());
 		
@@ -107,7 +107,7 @@ public class TestUsersAPI extends BaseTest {
 		assertTrue(api.resetPassword(email).get().getResult());
 		
 		// Log back in
-		f = api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		f = api.login(email, password, clientConfig.getClientID(), clientConfig.getClientSecret());
 		r = f.get().getResult();
 		assertNotNull(r.getToken());
 	
@@ -118,7 +118,7 @@ public class TestUsersAPI extends BaseTest {
 		assertEquals(200, api.changePassword(password, "myNewPassword123!!").get().getStatusCode());
 		assertTrue(api.logout().get().getResult());
 		
-		f = api.login(email, "myNewPassword123!!", TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		f = api.login(email, "myNewPassword123!!", clientConfig.getClientID(), clientConfig.getClientSecret());
 		r = f.get().getResult();
 		assertNotNull(r.getToken());
 		
@@ -139,7 +139,7 @@ public class TestUsersAPI extends BaseTest {
 			
 			// We are no longer valid!
 			assertEquals(401, api.me().get().getStatusCode());
-			assertEquals(401, api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET).get().getStatusCode());
+			assertEquals(401, api.login(email, password, clientConfig.getClientID(), clientConfig.getClientSecret()).get().getStatusCode());
 		}
 	}
 	
