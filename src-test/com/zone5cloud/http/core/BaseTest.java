@@ -2,6 +2,7 @@ package com.zone5cloud.http.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
 import com.zone5cloud.core.ClientConfig;
@@ -39,7 +40,6 @@ public abstract class BaseTest {
     						switch(key) {
     						case "username":
     							TEST_EMAIL = value;
-								clientConfig.setUserName(value);
     							break;
     						case "password":
     							TEST_PASSWORD = value;
@@ -53,7 +53,10 @@ public abstract class BaseTest {
     						case "clientSecret":
 								clientConfig.setClientSecret(value);
     							break;
-    						}
+							case "zone5BaseUrl":
+								clientConfig.setZone5BaseUrl(new URL(value));
+								break;
+							}
     					}
     				}
     			} catch (Exception e) { }
@@ -77,8 +80,6 @@ public abstract class BaseTest {
 	@Before
 	public void init() {
     	Z5HttpClient.get().setClientConfig(clientConfig);
-		Z5HttpClient.get().setHostname(TEST_SERVER);
-		Z5HttpClient.get().setClientIDAndSecret(clientConfig.getClientID(), clientConfig.getClientSecret());
 		Z5HttpClient.get().setDebug(true);
 	}
 	

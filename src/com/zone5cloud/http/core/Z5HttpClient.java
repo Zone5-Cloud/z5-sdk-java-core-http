@@ -65,7 +65,6 @@ public class Z5HttpClient implements Closeable {
 	private String clientID = null;
 	private String clientSecret = null;
 	private String userName = null;
-	private static ClientConfig clientConfig = null;
 
 	private ILogger logger = null;
 	protected final ConcurrentHashMap<Z5AuthorizationDelegate, Z5AuthorizationDelegate> delegates = new ConcurrentHashMap<>();
@@ -156,20 +155,20 @@ public class Z5HttpClient implements Closeable {
 		return this.userAgent;
 	}
 	
-	public void setClientIDAndSecret(String clientID, String secret) {
+	/*public void setClientIDAndSecret(String clientID, String secret) {
 		this.clientID = clientID;
 		this.clientSecret = secret;
-	}
+	}*/
 	
 	/** Set an alternate logger */
 	public void setLogger(ILogger logger) {
 		this.logger = logger;
 	}
-	
+
 	/** Set the server hostname - ie staging.todaysplan.com.au */
-	public void setHostname(String hostname) {
+	private void setHostname(String hostname) {
 		this.hostname = hostname;
-		
+
 		if (hostname != null && (hostname.startsWith("127.0.0.1") || hostname.contains(":8080")))
 			this.protocol = "http";
 		else
@@ -177,11 +176,11 @@ public class Z5HttpClient implements Closeable {
 	}
 
 	public void setClientConfig(ClientConfig clientConfig){
-		this.clientConfig = clientConfig;
 		this.authToken.set(clientConfig.getToken());
 		this.clientSecret = clientConfig.getClientSecret();
 		this.clientID = clientConfig.getClientID();
 		this.userName = clientConfig.getUserName();
+		setHostname(clientConfig.getZone5BaseUrl().getHost());
 	}
 
 	public void setUserName(String userName){
@@ -227,7 +226,7 @@ public class Z5HttpClient implements Closeable {
 					String username = token.extractUsername();
 					if (username != null) {
 						OAuthTokenRequest request = new OAuthTokenRequest();
-						request.setUsername(token.extractUsername());
+						request.setUsername(this.userName);
 						request.setRefreshToken(token.getRefreshToken());
 						request.setClientId(clientID);
 						request.setClientSecret(clientSecret);

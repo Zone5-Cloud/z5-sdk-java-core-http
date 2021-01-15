@@ -96,7 +96,13 @@ public class UserAPI extends AbstractAPI {
 			public void onSuccess(int code, LoginResponse result) {
 				OAuthToken token = new OAuthToken(result);
 				client.setToken(token);
-				
+
+				if(result !=null && result.getUser() != null ){
+					if(result.getUser().getEmail() != null){
+						client.setUserName(result.getUser().getEmail());
+					}
+				}
+
 				if (handler != null) {
 					handler.onSuccess(code, result);
 				}
