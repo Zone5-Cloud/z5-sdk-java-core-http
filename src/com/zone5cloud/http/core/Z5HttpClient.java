@@ -57,7 +57,7 @@ public class Z5HttpClient implements Closeable {
 		return c;
 	}
 	
-	private String hostname = "staging.todaysplan.com.au";
+	private String hostname = null;
 	private String protocol = "https";
 	
 	private final AtomicReference<AuthToken> authToken = new AtomicReference<>(null);
@@ -110,8 +110,9 @@ public class Z5HttpClient implements Closeable {
 	}
 	
 	public boolean isSpecialized() {
-		return this.hostname != null && (this.hostname.equals("api-sp.todaysplan.com.au")
-									 || this.hostname.equals("api-sp-staging.todaysplan.com.au"));
+		String host = this.hostname;
+		return host != null && (host.equals("api-sp.todaysplan.com.au")
+									 || host.equals("api-sp-staging.todaysplan.com.au"));
 	}
 	
 	/** Enable verbose debug logging */
@@ -434,7 +435,8 @@ public class Z5HttpClient implements Closeable {
 		if (!uri.startsWith("/"))
 			uri = String.format("/%s", path);
 		
-		return String.format("%s://%s%s", protocol, hostname, uri);
+		String host = this.hostname;
+		return String.format("%s://%s%s", protocol, host != null ? host : "", uri);
 	}
 	
 	protected String getURL(String path, Map<String,Object> queryParams, Object ...args) {

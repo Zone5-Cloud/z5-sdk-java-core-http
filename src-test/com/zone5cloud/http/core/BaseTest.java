@@ -46,6 +46,7 @@ public abstract class BaseTest {
     							break;
     						case "server":
     							TEST_SERVER = value;
+    							clientConfig.setZone5BaseUrl(new URL(getBaseEndpoint()));
     							break;
     						case "clientID":
 								clientConfig.setClientID(value);
@@ -53,9 +54,6 @@ public abstract class BaseTest {
     						case "clientSecret":
 								clientConfig.setClientSecret(value);
     							break;
-							case "zone5BaseUrl":
-								clientConfig.setZone5BaseUrl(new URL(value));
-								break;
 							}
     					}
     				}
