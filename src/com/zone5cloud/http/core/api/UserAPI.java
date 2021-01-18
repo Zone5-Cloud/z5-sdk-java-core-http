@@ -113,7 +113,6 @@ public class UserAPI extends AbstractAPI {
 				if (handler != null) {
 					handler.onError(code, error);
 				}
-				client.setUserName(null);
 			}
 
 			@Override
@@ -138,6 +137,7 @@ public class UserAPI extends AbstractAPI {
 			public void onSuccess(int code, Boolean result) {
 				if (result != null && result.booleanValue()) {
 					getClient().setToken(null);
+					getClient().setUserName(null);
 				}
 				
 				if (handler != null) {

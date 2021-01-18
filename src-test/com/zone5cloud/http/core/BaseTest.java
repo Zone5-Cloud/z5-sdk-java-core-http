@@ -22,7 +22,7 @@ public abstract class BaseTest {
 	/* SET YOUR SERVER ENDPOINT HERE */
 	protected String TEST_SERVER = "";
 	// This is your allocated clientId and secret - these can be set to null for S-Digital environments
-	protected ClientConfig clientConfig = new ClientConfig();
+	protected final ClientConfig clientConfig = new ClientConfig();
 	
     public BaseTest() {
     		// read config ~/tp.env or ~/z5.env
