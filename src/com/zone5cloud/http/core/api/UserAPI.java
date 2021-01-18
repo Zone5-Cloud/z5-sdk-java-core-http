@@ -96,7 +96,11 @@ public class UserAPI extends AbstractAPI {
 			public void onSuccess(int code, LoginResponse result) {
 				OAuthToken token = new OAuthToken(result);
 				client.setToken(token);
-				
+
+				if(result != null && result.getUser() != null && result.getUser().getEmail() != null) {
+					client.setUserName(result.getUser().getEmail());
+				}
+
 				if (handler != null) {
 					handler.onSuccess(code, result);
 				}
@@ -131,6 +135,7 @@ public class UserAPI extends AbstractAPI {
 			public void onSuccess(int code, Boolean result) {
 				if (result != null && result.booleanValue()) {
 					getClient().setToken(null);
+					getClient().setUserName(null);
 				}
 				
 				if (handler != null) {
@@ -238,5 +243,25 @@ public class UserAPI extends AbstractAPI {
 				}
 			}
 		});		
+	}
+
+	/** Return PasswordComplexity regex string */
+	public Future<Z5HttpResponse<String>> passwordComplexity(){
+		return passwordComplexity(null);
+	}
+
+	private Future<Z5HttpResponse<String>> passwordComplexity(Z5HttpResponseHandler<String> handler){
+		return getClient().doGet(Types.STRING, Users.PASSWORD_COMPLEXITY, null, handler);
+	}
+
+	/** Reconfirm email */
+	public Future<Z5HttpResponse<Void>> reconfirm(String email){
+		return reconfirm(email, null);
+	}
+
+	private Future<Z5HttpResponse<Void>> reconfirm(String email, Z5HttpResponseHandler<Void> handler){
+		Map<String, Object> queryParams = new HashMap<>(1);
+		queryParams.put("email", email);
+		return getClient().doGet(Types.VOID, Users.RECONFIRM, queryParams, handler);
 	}
 }

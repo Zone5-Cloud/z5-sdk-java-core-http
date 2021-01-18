@@ -18,15 +18,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.zone5cloud.core.*;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-import com.zone5cloud.core.Endpoints;
-import com.zone5cloud.core.Types;
-import com.zone5cloud.core.Z5AuthorizationDelegate;
-import com.zone5cloud.core.Z5Error;
 import com.zone5cloud.core.enums.GrantType;
 import com.zone5cloud.core.enums.Z5HttpHeader;
 import com.zone5cloud.core.oauth.AuthToken;
@@ -48,9 +45,11 @@ import com.zone5cloud.http.core.responses.Z5HttpResponseJson;
 public class Z5HttpClient implements Closeable {
 		
 	public static final ThreadLocal<Z5HttpClient> THREADLOCAL = new ThreadLocal<>();
-	
+
+
 	public static Z5HttpClient get() {
 		Z5HttpClient c = THREADLOCAL.get();
+
 		if (c == null) {
 			c = new Z5HttpClient();
 			THREADLOCAL.set(c);
@@ -58,14 +57,15 @@ public class Z5HttpClient implements Closeable {
 		return c;
 	}
 	
-	private String hostname = "staging.todaysplan.com.au";
+	private String hostname = null;
 	private String protocol = "https";
 	
 	private final AtomicReference<AuthToken> authToken = new AtomicReference<>(null);
 	private String userAgent = null;
 	private String clientID = null;
 	private String clientSecret = null;
-	
+	private String userName = null;
+
 	private ILogger logger = null;
 	protected final ConcurrentHashMap<Z5AuthorizationDelegate, Z5AuthorizationDelegate> delegates = new ConcurrentHashMap<>();
 	private final ExecutorService delegateExecutor = Executors.newSingleThreadExecutor();
@@ -79,7 +79,7 @@ public class Z5HttpClient implements Closeable {
 	
 	/** Uses a default HttpClient. For production apps, you can use the other constructor to pass in your own HttpClient instance */
 	public Z5HttpClient() {
-		
+
 		this(HttpClients.createDefault(), null);
 		setLogger(new ILogger() {
 			
@@ -110,7 +110,9 @@ public class Z5HttpClient implements Closeable {
 	}
 	
 	public boolean isSpecialized() {
-		return this.hostname != null && (this.hostname.equals("api-sp.todaysplan.com.au") || this.hostname.equals("api-sp-staging.todaysplan.com.au"));
+		String host = this.hostname;
+		return host != null && (host.equals("api-sp.todaysplan.com.au")
+									 || host.equals("api-sp-staging.todaysplan.com.au"));
 	}
 	
 	/** Enable verbose debug logging */
@@ -154,26 +156,42 @@ public class Z5HttpClient implements Closeable {
 		return this.userAgent;
 	}
 	
-	public void setClientIDAndSecret(String clientID, String secret) {
+	/*public void setClientIDAndSecret(String clientID, String secret) {
 		this.clientID = clientID;
 		this.clientSecret = secret;
-	}
+	}*/
 	
 	/** Set an alternate logger */
 	public void setLogger(ILogger logger) {
 		this.logger = logger;
 	}
-	
+
 	/** Set the server hostname - ie staging.todaysplan.com.au */
-	public void setHostname(String hostname) {
+	private void setHostname(String hostname) {
 		this.hostname = hostname;
-		
+
 		if (hostname != null && (hostname.startsWith("127.0.0.1") || hostname.contains(":8080")))
 			this.protocol = "http";
 		else
 			this.protocol = "https";
 	}
-	
+
+	public void setClientConfig(ClientConfig clientConfig){
+		if(clientConfig != null) {
+			this.authToken.set(clientConfig.getToken());
+			this.clientSecret = clientConfig.getClientSecret();
+			this.clientID = clientConfig.getClientID();
+			this.userName = clientConfig.getUserName();
+
+			if (clientConfig.getZone5BaseUrl() != null) {
+				setHostname(clientConfig.getZone5BaseUrl().getHost());
+			}
+		}
+	}
+
+	public void setUserName(String userName){
+		this.userName = userName;
+	}
 	/**
 	 * Add headers: 
 	 * * add authorization header
@@ -211,10 +229,10 @@ public class Z5HttpClient implements Closeable {
 				// refetch and check token as it might have refreshed while we were waiting for mutex
 				token = this.authToken.get();
 				if (token != null && token.getRefreshToken() != null && token.isExpired()) {
-					String username = token.extractUsername();
+					String username = this.userName;
 					if (username != null) {
 						OAuthTokenRequest request = new OAuthTokenRequest();
-						request.setUsername(token.extractUsername());
+						request.setUsername(username);
 						request.setRefreshToken(token.getRefreshToken());
 						request.setClientId(clientID);
 						request.setClientSecret(clientSecret);
@@ -417,7 +435,8 @@ public class Z5HttpClient implements Closeable {
 		if (!uri.startsWith("/"))
 			uri = String.format("/%s", path);
 		
-		return String.format("%s://%s%s", protocol, hostname, uri);
+		String host = this.hostname;
+		return String.format("%s://%s%s", protocol, host != null ? host : "", uri);
 	}
 	
 	protected String getURL(String path, Map<String,Object> queryParams, Object ...args) {

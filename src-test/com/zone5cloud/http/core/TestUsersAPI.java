@@ -39,7 +39,7 @@ public class TestUsersAPI extends BaseTest {
 	
 	@Test
 	public void testLoginLogout() throws Exception {
-		Z5HttpResponse<LoginResponse> response = api.login(TEST_EMAIL, TEST_PASSWORD, TEST_CLIENT_ID, TEST_CLIENT_SECRET).get();
+		Z5HttpResponse<LoginResponse> response = api.login(TEST_EMAIL, TEST_PASSWORD, clientConfig.getClientID(), clientConfig.getClientSecret()).get();
 		assertEquals(200, response.getStatusCode());
 		LoginResponse login = response.getResult();
 		assertNotNull(login);
@@ -91,7 +91,7 @@ public class TestUsersAPI extends BaseTest {
 		}
 		
 		// Login and set our bearer token
-		LoginRequest request = new LoginRequest(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		LoginRequest request = new LoginRequest(email, password, clientConfig.getClientID(), clientConfig.getClientSecret());
 		List<String> terms = new ArrayList<>();
 		terms.add("Specialized_Terms_Apps");
 		terms.add("Specialized_Terms");
@@ -115,7 +115,7 @@ public class TestUsersAPI extends BaseTest {
 		assertTrue(api.resetPassword(email).get().getResult());
 		
 		// Log back in
-		f = api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		f = api.login(email, password, clientConfig.getClientID(), clientConfig.getClientSecret());
 		r = f.get().getResult();
 		assertNotNull(r.getToken());
 	
@@ -126,7 +126,7 @@ public class TestUsersAPI extends BaseTest {
 		assertEquals(200, api.changePassword(password, "myNewPassword123!!").get().getStatusCode());
 		assertTrue(api.logout().get().getResult());
 		
-		f = api.login(email, "myNewPassword123!!", TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		f = api.login(email, "myNewPassword123!!", clientConfig.getClientID(), clientConfig.getClientSecret());
 		r = f.get().getResult();
 		assertNotNull(r.getToken());
 		
@@ -147,7 +147,7 @@ public class TestUsersAPI extends BaseTest {
 			
 			// We are no longer valid!
 			assertEquals(401, api.me().get().getStatusCode());
-			assertEquals(401, api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET).get().getStatusCode());
+			assertEquals(401, api.login(email, password, clientConfig.getClientID(), clientConfig.getClientSecret()).get().getStatusCode());
 		}
 	}
 	
@@ -215,6 +215,19 @@ public class TestUsersAPI extends BaseTest {
 		f.get();
 		l.await();
 		
+	}
+
+	@Test
+	public void testReconfirm() throws Exception {
+		Z5HttpResponse<Void> response = api.reconfirm(TEST_EMAIL).get();
+		assertTrue(response.isSuccess());
+	}
+
+	@Test
+	public void testPasswordComplexityApi() throws Exception {
+		Z5HttpResponse<String> response = api.passwordComplexity().get();
+		assertNotNull(response.getResult());
+		assertEquals("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$", response.getResult());
 	}
 
 }

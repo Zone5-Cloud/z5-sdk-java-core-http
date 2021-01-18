@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.zone5cloud.core.ClientConfig;
 import org.junit.Test;
 
 import com.zone5cloud.core.Z5Error;
@@ -19,7 +20,10 @@ public class TestUtilities extends BaseTest {
 
 	@Test
 	public void testErrors() throws Exception {
-		Z5HttpClient.get().setClientIDAndSecret("bogus clientid", "bogus secret");
+		ClientConfig clientConfig = new ClientConfig();
+		clientConfig.setClientID("bogus clientid");
+		clientConfig.setClientSecret("bogus clientsecret");
+		Z5HttpClient.get().setClientConfig(clientConfig);
 		Z5HttpResponse<LoginResponse> response = api.login(TEST_EMAIL, TEST_PASSWORD, "bogus clientid", "bogus secret", new Z5HttpResponseHandler<LoginResponse>() {
 			
 			@Override
