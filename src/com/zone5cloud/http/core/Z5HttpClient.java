@@ -176,11 +176,16 @@ public class Z5HttpClient implements Closeable {
 	}
 
 	public void setClientConfig(ClientConfig clientConfig){
-		this.authToken.set(clientConfig.getToken());
-		this.clientSecret = clientConfig.getClientSecret();
-		this.clientID = clientConfig.getClientID();
-		this.userName = clientConfig.getUserName();
-		setHostname(clientConfig.getZone5BaseUrl().getHost());
+		if(clientConfig != null) {
+			this.authToken.set(clientConfig.getToken());
+			this.clientSecret = clientConfig.getClientSecret();
+			this.clientID = clientConfig.getClientID();
+			this.userName = clientConfig.getUserName();
+
+			if (clientConfig.getZone5BaseUrl() != null) {
+				setHostname(clientConfig.getZone5BaseUrl().getHost());
+			}
+		}
 	}
 
 	public void setUserName(String userName){
@@ -223,10 +228,10 @@ public class Z5HttpClient implements Closeable {
 				// refetch and check token as it might have refreshed while we were waiting for mutex
 				token = this.authToken.get();
 				if (token != null && token.getRefreshToken() != null && token.isExpired()) {
-					String username = token.extractUsername();
+					String username = this.userName;
 					if (username != null) {
 						OAuthTokenRequest request = new OAuthTokenRequest();
-						request.setUsername(this.userName);
+						request.setUsername(username);
 						request.setRefreshToken(token.getRefreshToken());
 						request.setClientId(clientID);
 						request.setClientSecret(clientSecret);
