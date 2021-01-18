@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -17,6 +19,7 @@ import org.junit.Test;
 import com.zone5cloud.core.Z5Error;
 import com.zone5cloud.core.enums.UnitMeasurement;
 import com.zone5cloud.core.oauth.OAuthToken;
+import com.zone5cloud.core.users.LoginRequest;
 import com.zone5cloud.core.users.LoginResponse;
 import com.zone5cloud.core.users.RegisterUser;
 import com.zone5cloud.core.users.User;
@@ -54,7 +57,7 @@ public class TestUsersAPI extends BaseTest {
 	@Test
 	public void testRegistrationLoginDelete() throws Exception {
 		String[] parts = TEST_EMAIL.split("@");
-		String email = String.format("%s+%d@%s", parts[0], System.currentTimeMillis(), parts[1]);
+		String email = String.format("%s%s%d@%s", parts[0], (parts[0].contains("+") ? "" : "+"), System.currentTimeMillis(), parts[1]);
 		String password = "superS3cretStu55";
 		String firstname = "Test";
 		String lastname = "User";
@@ -88,7 +91,12 @@ public class TestUsersAPI extends BaseTest {
 		}
 		
 		// Login and set our bearer token
-		Future<Z5HttpResponse<LoginResponse>> f = api.login(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		LoginRequest request = new LoginRequest(email, password, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
+		List<String> terms = new ArrayList<>();
+		terms.add("Specialized_Terms_Apps");
+		terms.add("Specialized_Terms");
+		request.setAccept(terms);
+		Future<Z5HttpResponse<LoginResponse>> f = api.login(request, null);
 		LoginResponse r = f.get().getResult();
 		assertNotNull(r.getToken());
 		
