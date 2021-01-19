@@ -2,60 +2,82 @@ package com.zone5cloud.http.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
+import com.zone5cloud.core.ClientConfig;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 
-import com.zone5cloud.http.core.Z5HttpClient;
-import com.zone5cloud.http.core.api.UserAPI;
 import com.zone5cloud.core.users.User;
 import com.zone5cloud.core.utils.GsonManager;
+import com.zone5cloud.http.core.api.UserAPI;
 
 public abstract class BaseTest {
-	
-	/* SET YOUR OAUTH BEARER TOKEN HERE */
-	protected String token = null;
+	/* SET YOUR TEST EMAIL HERE */
+	protected String TEST_EMAIL = "<enter-your-email-here@todaysplan.com.au>";
+	protected String TEST_PASSWORD = "<enter-your-password-here>";
+	protected String TEST_BIKE_UUID = null; // andrew SBC Staging: "d584c5cb-e81f-4fbe-bc0d-667e9bcd2c4c"
 	
 	/* SET YOUR SERVER ENDPOINT HERE */
-	protected String server = "staging.todaysplan.com.au";
+	protected String TEST_SERVER = "";
+	// This is your allocated clientId and secret - these can be set to null for S-Digital environments
+	protected final ClientConfig clientConfig = new ClientConfig();
 	
-	{
-		// read token and server from ~/tp.env
-		// token = ...
-		// server = ...
-		File f = new File(System.getProperty("user.home")+File.separatorChar+"tp.env");
-		if (!f.exists())
-			 f = new File(System.getProperty("user.home")+File.separatorChar+"z5.env");
-		
-		if (f.exists()) {
-			try {
-				for(String line : FileUtils.readLines(f, "UTF-8")) {
-					String[] arr = line.split(" = ");
-					if (arr.length == 2) {
-						if (arr[0].trim().equals("token"))
-							token = arr[1].trim();
-						else if (arr[0].trim().equals("server"))
-							server = arr[1].trim();
-					}
-				}
-			} catch (Exception e) { }
-			
-			if (token != null || server != null)
-				System.out.println(String.format("[ Using credentials in file %s - server=%s, token=%s ]", f.getAbsolutePath(), server, token));
-		}
+    public BaseTest() {
+    		// read config ~/tp.env or ~/z5.env
+    		File f = new File(System.getProperty("user.home")+File.separatorChar+"tp.env");
+    		if (!f.exists())
+    			 f = new File(System.getProperty("user.home")+File.separatorChar+"z5.env");
+    		
+    		if (f.exists()) {
+    			try {
+    				for(String line : FileUtils.readLines(f, "UTF-8")) {
+    					String[] arr = line.split("=");
+    					if (arr.length == 2) {
+    						String key = arr[0].trim();
+    						String value = arr[1].trim();
+    						switch(key) {
+    						case "username":
+    							TEST_EMAIL = value;
+    							break;
+    						case "password":
+    							TEST_PASSWORD = value;
+    							break;
+    						case "server":
+    							TEST_SERVER = value;
+    							clientConfig.setZone5BaseUrl(new URL(getBaseEndpoint()));
+    							break;
+    						case "clientID":
+								clientConfig.setClientID(value);
+    							break;
+    						case "clientSecret":
+								clientConfig.setClientSecret(value);
+    							break;
+							}
+    					}
+    				}
+    			} catch (Exception e) { }
+    			
+    			if (f.exists() && clientConfig.getUserName() != null || TEST_SERVER != null)
+    				System.out.println(String.format("[ Using credentials in file %s - server=%s, username=%s ]",
+							f.getAbsolutePath(), TEST_SERVER, clientConfig.getUserName()));
+    		}
+    }
+    
+	protected void login() throws InterruptedException, ExecutionException {
+		new UserAPI().login(TEST_EMAIL, TEST_PASSWORD, clientConfig.getClientID(), clientConfig.getClientSecret()).get();
 	}
-	
+
 	public String getBaseEndpoint() {
-		if (server.startsWith("127.0.0.1"))
-			return String.format("http://%s", server);
-		return String.format("https://%s", server);
+		if (TEST_SERVER.startsWith("127.0.0.1"))
+			return String.format("http://%s", TEST_SERVER);
+		return String.format("https://%s", TEST_SERVER);
 	}
 	
 	@Before
 	public void init() {
-		Z5HttpClient.get().setHostname(server);
-		Z5HttpClient.get().setToken(token);
+    	Z5HttpClient.get().setClientConfig(clientConfig);
 		Z5HttpClient.get().setDebug(true);
 	}
 	

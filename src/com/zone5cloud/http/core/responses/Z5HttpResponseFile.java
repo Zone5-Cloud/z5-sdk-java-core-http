@@ -3,6 +3,7 @@ package com.zone5cloud.http.core.responses;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -27,22 +28,27 @@ public class Z5HttpResponseFile extends Z5HttpResponse<File> {
 	
 	@Override
 	protected File deserialize(InputStream is) throws IOException {
-		if (file.exists())
-			file.delete();
-		FileUtils.copyInputStreamToFile(is, file);
+		if (file != null) {
+			Files.deleteIfExists(file.toPath());
+			FileUtils.copyInputStreamToFile(is, file);
+		}
 		return file;
 	}
 	
 	@Override
 	public String toString() {
-		if (file != null)
+		if (file != null) {
 			return file.getAbsolutePath() + " (" + file.length()+")";
-		else if (error != null && error.startsWith("{"))
-			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(error, Map.class));
-		else if (error != null && error.startsWith("["))
-			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(error, ArrayList.class));
-		else if (error != null)
-			return error;
+		} else if (error != null) {
+			return GsonManager.getInstance(true).toJson(error);
+		} else if (rawError != null && rawError.startsWith("{")) {
+			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(rawError, Map.class));
+		} else if (rawError != null && rawError.startsWith("[")) {
+			return GsonManager.getInstance(true).toJson(GsonManager.getInstance().fromJson(rawError, ArrayList.class));
+		} else if (rawError != null) {
+			return rawError;
+		}
+		
 		return "";
 	}
 }

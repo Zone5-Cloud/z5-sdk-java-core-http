@@ -5,7 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.zone5cloud.core.enums.Equipment;
@@ -21,13 +23,19 @@ import com.zone5cloud.core.search.Order;
 import com.zone5cloud.core.search.SearchResult;
 import com.zone5cloud.core.users.User;
 import com.zone5cloud.http.core.api.RideAPI;
-import com.zone5cloud.http.core.api.UserAPI;
 
 public class TestUserScheduledActivities extends BaseTest {
 
-	private final UserAPI users = new UserAPI();
 	private final RideAPI rides = new RideAPI();
 	
+	@Before
+	public void setup() throws InterruptedException, ExecutionException {
+		login();
+	}
+	
+	/**
+	 * Note - I don't appear to have permission to add a new ride...?
+	 */
 	@Test
 	public void testCreateNewRide() throws Exception {
 		

@@ -7,6 +7,10 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
+import com.zone5cloud.core.Types;
+import com.zone5cloud.core.Z5Error;
+import com.zone5cloud.core.utils.GsonManager;
+
 public abstract class Z5HttpResponse<T> {
 	
 	private final int code;
@@ -16,18 +20,20 @@ public abstract class Z5HttpResponse<T> {
 	private T t = null;
 	
 	// Raw response - usually a string, unless we are downloading a file
-	protected String error = null;
+	protected Z5Error error = null;
+	protected String rawError = null;
 	
 	protected Exception e = null;
 	
-	public Z5HttpResponse(CloseableHttpResponse rsp) {
+	protected Z5HttpResponse(CloseableHttpResponse rsp) {
 		this.code = rsp.getStatusLine().getStatusCode();
 		this.rsp = rsp;
 	}
 	
-	public Z5HttpResponse(Exception e) {
+	protected Z5HttpResponse(Exception e) {
 		this.code = -1;
 		this.rsp = null;
+		this.e = e;
 	}
 	
 	public boolean isSuccess() {
@@ -43,7 +49,8 @@ public abstract class Z5HttpResponse<T> {
 			this.t = rsp.getEntity() != null && rsp.getEntity().getContent() != null ? deserialize(rsp.getEntity().getContent()) : null;
 		
 		} else {
-			this.error = IOUtils.toString(rsp.getEntity().getContent(), StandardCharsets.UTF_8);
+			this.rawError = IOUtils.toString(rsp.getEntity().getContent(), StandardCharsets.UTF_8);
+			this.error = GsonManager.getInstance().fromJson(rawError, Types.ERROR);
 		}
 	}
 	
@@ -55,7 +62,7 @@ public abstract class Z5HttpResponse<T> {
 		return this.t;
 	}
 	
-	public String getError() {
+	public Z5Error getError() {
 		return error;
 	}
 	
