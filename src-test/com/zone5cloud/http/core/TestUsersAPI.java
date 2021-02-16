@@ -53,8 +53,20 @@ public class TestUsersAPI extends BaseTest {
 		assertNull(Z5HttpClient.get().getToken());
 	}
 	
-	/** To run this test you need a valid clientId & secret */
 	@Test
+	public void testRegistrationNotLoggedIn() throws Exception {
+		new UserAPI().logout().get(); //logout
+		testRegistrationLoginDelete();
+	}
+	
+	@Test
+	public void testRegistrationLoggedIn() throws Exception {
+		testMe(); // confirm logged in
+		testRegistrationLoginDelete();
+	}
+	
+	/** To run this test you need a valid clientId & secret */
+	//@Test - run from the 2 above differing scenarios
 	public void testRegistrationLoginDelete() throws Exception {
 		String[] parts = TEST_EMAIL.split("@");
 		String email = String.format("%s%s%d@%s", parts[0], (parts[0].contains("+") ? "" : "+"), System.currentTimeMillis(), parts[1]);
@@ -82,7 +94,7 @@ public class TestUsersAPI extends BaseTest {
 		User user = api.register(register).get().getResult();
 		assertNotNull(user.getId()); // our unique userId
 		assertEquals(email, user.getEmail());
-		assertEquals(Locale.getDefault().toString().toLowerCase(), user.getLocale());
+		assertEquals(Locale.getDefault().toString().toLowerCase(), user.getLocale().toLowerCase());
 		
 		// Note - in S-Digital, the user will need to validate their email before they can login...
 		if (api.getClient().isSpecialized()) {
@@ -144,9 +156,13 @@ public class TestUsersAPI extends BaseTest {
 		if (!api.getClient().isSpecialized()) {
 			// Delete this account
 			assertEquals(204, api.deleteAccount(me.getId()).get().getStatusCode());
+			int statusCode = 200;
+			for(int i = 0; i < 5 && statusCode != 401; i++) {
+				statusCode = api.me().get().getStatusCode();
+			}
 			
 			// We are no longer valid!
-			assertEquals(401, api.me().get().getStatusCode());
+			assertEquals(401, statusCode);
 			assertEquals(401, api.login(email, password, clientConfig.getClientID(), clientConfig.getClientSecret()).get().getStatusCode());
 		}
 	}
